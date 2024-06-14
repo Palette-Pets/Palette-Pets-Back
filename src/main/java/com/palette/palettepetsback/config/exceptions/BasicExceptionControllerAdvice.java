@@ -40,6 +40,6 @@ public class BasicExceptionControllerAdvice {
     @ExceptionHandler({ NotAuthenticatedException.class })
     public ResponseEntity<?> notAuthenticatedException(NotAuthenticatedException e) {
         log.error("NotAuthenticatedException = {}", e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND); // 404 error
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST); // 400 error
     }
 }

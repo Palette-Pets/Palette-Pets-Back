@@ -2,6 +2,7 @@ package com.palette.palettepetsback.articleComment.controller;
 
 import com.palette.palettepetsback.Article.Article;
 import com.palette.palettepetsback.Article.articleView.service.ArticleService;
+import com.palette.palettepetsback.Article.articleWrite.response.Response;
 import com.palette.palettepetsback.Article.articleWrite.service.ArticleWriteService;
 import com.palette.palettepetsback.articleComment.dto.request.ArticleCommentAddRequest;
 import com.palette.palettepetsback.articleComment.dto.response.ArticleCommentListResponse;
@@ -11,6 +12,8 @@ import com.palette.palettepetsback.articleComment.service.ArticleCommentService;
 
 import com.palette.palettepetsback.config.jwt.AuthInfoDto;
 import com.palette.palettepetsback.config.jwt.JWTUtil;
+import com.palette.palettepetsback.config.jwt.jwtAnnotation.JwtAuth;
+import com.palette.palettepetsback.member.entity.Member;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,7 +55,7 @@ public class ArticleCommentController {
 
         AuthInfoDto memberInfo = JWTUtil.getMemberInfo(); //토큰을 가져와서 멤버아이디 찾아내기
         if(memberInfo == null) {
-            return null;
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
         }
         dto.setCreatedWho(memberInfo.getMemberId());//dto를 받아와서 멤버아이디가 없으니까  위에꺼를 가져와서 넣기
         log.info("member : " + memberInfo.getMemberId());
@@ -64,13 +67,26 @@ public class ArticleCommentController {
     }
 
 
-   //PATCH
-//    @PatchMapping("/Patch/comments/{articleCommentId}")
-//    public ResponseEntity<ArticleCommentDto>update(@PathVariable Long articleCommentId,
-//                                                   @RequestBody ArticleCommentDto dto){
-//        ArticleCommentDto updatedDto = articleCommentService.update(articleCommentId,dto);
-//        return ResponseEntity.status(HttpStatus.OK).body(updatedDto);
-//    }
+    //PATCH
+   @PatchMapping("/Patch/comments/{articleCommentId}")
+    public ResponseEntity<ArticleComment>update(@PathVariable Long articleCommentId){
+
+        return ResponseEntity.status(HttpStatus.OK).body(new ArticleComment());
+    }
+
+
+
+
+    //댓글 삭제
+    @DeleteMapping("/comments/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public Response delete (@PathVariable final Long id,
+                            @JwtAuth Member member){
+        articleCommentService.deleteComment(id,member);
+        return Response.success();
+    }
+
+
 
    //DELETE
 //    @DeleteMapping("/Delete/comments/{articleCommentId}")

@@ -28,13 +28,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         OAuth2Response oAuth2Response = null;
-
+        String LOGIN_TYPE="";
         if (registrationId.equals("naver")) {
-
+            LOGIN_TYPE="naver";
             oAuth2Response = new NaverResponse(oAuth2User.getAttributes());
         }
         else if (registrationId.equals("google")) {
-
+            LOGIN_TYPE="google";
             oAuth2Response = new GoogleResponse(oAuth2User.getAttributes());
         }
         else {
@@ -70,6 +70,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                       .memberPhone(oAuth2Response.getPhone_number())
                       .memberImage(oAuth2Response.getProfile_image())
                       .role(Role.USER)
+                      .loginType(LOGIN_TYPE)
                       .build();
 
             memberRepository.save(member);

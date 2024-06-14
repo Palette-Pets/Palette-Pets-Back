@@ -1,5 +1,6 @@
 package com.palette.palettepetsback.hotSpot.repository;
 
+import com.palette.palettepetsback.hotSpot.dto.response.HotSpotResponse;
 import com.palette.palettepetsback.hotSpot.entity.HotSpot;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

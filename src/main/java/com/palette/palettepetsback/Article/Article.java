@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.StringJoiner;
 
 import static java.util.stream.Collectors.toList;
 import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
@@ -64,7 +65,7 @@ public class Article {
     //추가 Entity
     @Column(name="board_name")
     @Enumerated(EnumType.STRING)
-    private Article.ComminityBoard boardName;
+    private ComminityBoard boardName;
 
     @Column(name="article_head")
     private String articleHead;
@@ -112,13 +113,29 @@ public class Article {
     }
 
 
+
+    // 1. req에 addImages -> 등록해야 할 파일
+    // 2. req에 deletedImages -> 삭제해야 할 파일
     public ImageUpdateResult update(ArticleUpdateRequest req) {
+
+        StringJoiner joiner = new StringJoiner(",");
+        for (String item : req.getArticleTags()) {
+            joiner.add(item);
+        }
+
+        this.articleHead = req.getArticleHead();
+        this.boardName = ComminityBoard.valueOf(req.getBoardName());
+        this.articleTags = joiner.toString();
         this.title = req.getTitle();
         this.content = req.getContent();
 
-        ImageUpdateResult result = findImageUpdateResult(req.getAddedImages(),req.getDeletedImages());
+        ImageUpdateResult result = findImageUpdateResult(req.getAddImages(),req.getDeletedImages());
+
+        // 등록해야할 파일 Entity를 전해 주면 자동으로 JPA에서 추가
         addImages(result.getAddedImage());
+        // 삭제해야할 파일 Entity를 전해 주면 자동으로 JPA에서 삭제
         deleteImages(result.getDeletedImages());
+
         return result;
     }
 
@@ -135,14 +152,14 @@ public class Article {
     }
 
 
-    private ImageUpdateResult findImageUpdateResult(List<MultipartFile> addedImageFiles, List<Integer> deletedImageIds) {
+    private ImageUpdateResult findImageUpdateResult(List<String> addedImageUrls, List<Long> deletedImageIds) {
 
-        List<ArticleImage>addedImages = convertImageFilesToImages(addedImageFiles);
+        List<ArticleImage> addedImages = convertImageFilesToImages(addedImageUrls);
         List<ArticleImage> deletedImages = convertImageIdsToImages(deletedImageIds);
-        return new ImageUpdateResult(addedImageFiles,addedImages,deletedImages);
+        return new ImageUpdateResult(addedImages,deletedImages);
     }
 
-    private List<ArticleImage> convertImageIdsToImages(List<Integer> imageIds) {
+    private List<ArticleImage> convertImageIdsToImages(List<Long> imageIds) {
         return imageIds.stream()
                 .map(this::convertImageIdToImage)
                 .filter(Optional::isPresent)
@@ -150,17 +167,15 @@ public class Article {
                 .collect(toList());
     }
 
-    private Optional<ArticleImage> convertImageIdToImage( int id) {
+    private Optional<ArticleImage> convertImageIdToImage( Long id) {
      return this.images.stream()
              .filter(articleImage -> articleImage.isSameImageId(id))
              .findAny();
-
-
     }
 
-    private List<ArticleImage> convertImageFilesToImages(List<MultipartFile>imageFiles) {
+    private List<ArticleImage> convertImageFilesToImages(List<String> imageFiles) {
         return imageFiles.stream()
-                .map(imageFile->ArticleImage.from(imageFile.getOriginalFilename()))
+                .map(ArticleImage::from)
                 .collect(toList());
     }
 
@@ -189,10 +204,11 @@ public class Article {
 
     @Getter
     @AllArgsConstructor
+    @ToString
     public static class ImageUpdateResult {
-        private List<MultipartFile> addedImageFiles;
-        private List<ArticleImage>addedImage;
-        private List<ArticleImage>deletedImages;
+
+        private List<ArticleImage> addedImage;
+        private List<ArticleImage> deletedImages;
 
     }
 }

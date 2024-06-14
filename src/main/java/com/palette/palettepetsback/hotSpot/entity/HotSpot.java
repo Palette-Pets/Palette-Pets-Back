@@ -82,20 +82,18 @@ public class HotSpot {
     }
 
     //Entity to dto
-    public HotSpotListResponse toDto() {
+    public HotSpotListResponse toDto(Integer rating, String imgUrl) {
 
         return HotSpotListResponse.builder()
                 .hotSpotId(this.id)
-                .memberNickname(getMember().getMemberNickname())
                 .createAt(createdAt)
                 .modifiedAt(modifiedAt)
                 .placeName(placeName)
                 .simpleContent(simpleContent)
-                .content(content)
                 .address(address)
-                .lat(lat)
-                .lng(lng)
                 .countViews(countViews)
+                .rating(rating)
+                .imgUrl(imgUrl)
                 .build();
 
     }

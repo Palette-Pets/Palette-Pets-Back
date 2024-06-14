@@ -11,6 +11,7 @@ import com.palette.palettepetsback.Article.articleWrite.repository.ArticleWriteR
 import com.palette.palettepetsback.Article.articleWrite.response.Response;
 import com.palette.palettepetsback.Article.articleWrite.service.ArticleWriteService;
 import com.palette.palettepetsback.Article.exception.type.ArticleNotFoundException;
+import com.palette.palettepetsback.Article.redis.ReportArticleRedis;
 import com.palette.palettepetsback.config.jwt.AuthInfoDto;
 import com.palette.palettepetsback.config.jwt.jwtAnnotation.JwtAuth;
 import com.palette.palettepetsback.member.entity.Member;
@@ -67,11 +68,9 @@ public class ArticleWriteController {
 //        log.info("authInfo = {}", authInfoDto);
         //조회수 증가
         articleWriteService.updateCountViews(articleId);
-
         //단건 응답
         return Response.success(articleWriteService.findArticle(articleId));
     }
-
 
     //게시글 등록 --- 완료
     @PostMapping(path="/Post/article")
@@ -108,14 +107,32 @@ public class ArticleWriteController {
         return articleWriteService.createImgArticle(dto)!=null;
     }
 
+    //게시글 수정 단건 조회
+    @GetMapping("/article/getUpdateArticle/{articleId}")
+    @ResponseStatus(HttpStatus.OK)
+    public Response getUpdateArticle(@PathVariable final Long articleId
+                                     ,@JwtAuth final AuthInfoDto authInfoDto){
+
+        //단건 응답
+        return Response.success(articleWriteService.getUpdateArticle(articleId));
+    }
 
     //게시글 수정 -> 변경
-    @PutMapping("/articles/{articleId}")
+    @PutMapping("/articles/update/{articleId}")
     @ResponseStatus(HttpStatus.OK)
     public Response editArticle(@PathVariable final Long articleId,
-                                @Valid @RequestBody final ArticleUpdateRequest req,
+                                @Valid @RequestPart(value = "dto") final ArticleUpdateRequest req,
+                                @RequestPart(value = "files", required = false) List<MultipartFile> files,
                                 @JwtAuth final AuthInfoDto authInfoDto){
-        return Response.success(articleWriteService.editArticle(articleId,req,authInfoDto));
+
+//        log.info("articleId = {}", articleId);
+//        log.info("req = {}", req);
+//        log.info("files = {}", files);
+//        log.info("authInfoDto = {}", authInfoDto);
+
+        articleWriteService.editArticle(articleId,req,authInfoDto,files);
+
+        return Response.success("aaaaa");
     }
 
 
@@ -135,8 +152,7 @@ public class ArticleWriteController {
 
 
     // 삭제할때는 Article.state는 deleted (삭제됨) article.is_deleted는 1로 수정 article_id 만 있으면 됨
-    //DELETE
-
+    //DELETE -- 완료
     @DeleteMapping("/Delete/{articleId}")
     public ResponseEntity<String> delete(@PathVariable Long articleId){
 
@@ -146,12 +162,26 @@ public class ArticleWriteController {
 
     }
 
+    //게시글 삭제 ->
+//    @DeleteMapping("/article/{articleId}")
+//    @ResponseStatus(HttpStatus.OK)
+//    public Response deleteArticle(@PathVariable final Long articleId,
+//                                  @JwtAuth final AuthInfoDto authInfoDto){
+//        articleWriteService.deleteArticle(articleId,authInfoDto);
+//        return Response.success();
+//    }
+
     //게시글 이미지 삭제
     @DeleteMapping("{id}/img")
     public boolean deleteArticleImg(@PathVariable ("id")Long id,@RequestBody List<Long>imgIds ){
         articleWriteService.deleteImgArticle(imgIds);
         return true;
     }
+
+
+
+
+
 }
 
 

@@ -15,7 +15,7 @@ public class ArticleCommentListResponse {
 
     private Long articleCommentId;
     private String content;
-    private LocalDateTime updateAt ;
+    private LocalDateTime updateAt;
     //Member 닉네임, 프로필 사진
     private String memberNickname;
     private String memberImage;

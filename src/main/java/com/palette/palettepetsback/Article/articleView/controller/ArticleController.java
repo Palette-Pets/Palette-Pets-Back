@@ -1,9 +1,8 @@
 package com.palette.palettepetsback.Article.articleView.controller;
 
 import com.palette.palettepetsback.Article.Article;
-import com.palette.palettepetsback.Article.articleView.DTO.reponsse.ArticleResponseDTO;
+import com.palette.palettepetsback.Article.articleView.DTO.response.ArticleResponseDTO;
 import com.palette.palettepetsback.Article.articleView.DTO.PageableDTO;
-import com.palette.palettepetsback.Article.articleView.DTO.request.ArticleRequestDTO;
 import com.palette.palettepetsback.Article.articleView.service.ArticleKomoranService;
 import com.palette.palettepetsback.Article.articleView.service.ArticleService;
 import lombok.RequiredArgsConstructor;

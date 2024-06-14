@@ -1,11 +1,17 @@
+
+
 spring:
   application:
     name: PalettePetsBack
 
+  # spring cache => redis
+  cache:
+    type: redis
+
+
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     open-in-view: false
-    show-sql: true
     properties:
       hibernate:
         format_sql: true
@@ -75,5 +81,7 @@ logging:
 jwt:
   secret: sasfjkvnweor1230gfdj560912-49gflkdgj340459bjvb;l4lfo40-go5i6-sl4
 
+server:
+  port: 80
 
 

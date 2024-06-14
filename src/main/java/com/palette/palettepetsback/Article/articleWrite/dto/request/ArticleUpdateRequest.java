@@ -1,7 +1,9 @@
 package com.palette.palettepetsback.Article.articleWrite.dto.request;
 
 
+import com.palette.palettepetsback.Article.ArticleImage;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,17 +17,23 @@ import java.util.List;
 @NoArgsConstructor
 public class ArticleUpdateRequest {
 
+
+
+    private String boardName;
+    private String articleHead;
+    private List<String> articleTags;
+
     @NotBlank(message="게시글 제목을 입력해주세요.")
     private String title;
-
     @NotBlank(message = "게시글 내용을 입력해주세요.")
     private String content;
 
+    private Long createdWho;
 
-    //addedImages만들어야함
-        private List<MultipartFile> addedImages = new ArrayList<>();
+    //들어가는 파일
+    private List<String> addImages;
 
-
-    private List<Integer> deletedImages = new ArrayList<>();
+    //삭제되는 파일
+    private List<Long> deletedImages;
 
 }

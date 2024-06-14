@@ -4,6 +4,8 @@ package com.palette.palettepetsback.articleComment.service;
 import com.palette.palettepetsback.Article.Article;
 import com.palette.palettepetsback.Article.Article;
 import com.palette.palettepetsback.Article.articleView.repository.ArticleRepository;
+import com.palette.palettepetsback.Article.exception.type.AuthInfoDtoNotEqualsException;
+import com.palette.palettepetsback.Article.exception.type.CommentNotFoundException;
 import com.palette.palettepetsback.articleComment.dto.request.ArticleCommentAddRequest;
 import com.palette.palettepetsback.articleComment.dto.response.ArticleCommentListResponse;
 import com.palette.palettepetsback.articleComment.entity.ArticleComment;
@@ -14,6 +16,7 @@ import com.palette.palettepetsback.config.jwt.AuthInfoDto;
 import com.palette.palettepetsback.config.jwt.JWTUtil;
 import com.palette.palettepetsback.member.entity.Member;
 import com.palette.palettepetsback.member.repository.MemberRepository;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
@@ -53,11 +56,16 @@ public class ArticleCommentService {
 
         QArticleComment qArticleComment = QArticleComment.articleComment;
 
+
+        BooleanBuilder where = new BooleanBuilder();
+        where.and(qArticleComment.article.isDeleted.eq(false));
+        where.and(qArticleComment.article.articleId.eq(articleId));
+
         List<ArticleComment> articleComments =
                 jpaQueryFactory.selectFrom(qArticleComment)
                 .leftJoin(qArticleComment.parentId)
                 .fetchJoin()
-                .where(qArticleComment.article.articleId.eq(articleId))
+                .where(where)
                 .orderBy(
                         qArticleComment.parentId.articleCommentId.asc().nullsFirst(),
                         qArticleComment.createdAt.asc()
@@ -95,6 +103,22 @@ public class ArticleCommentService {
         }
 
         return articleCommentRepository.save(dto.toEntity(article,member, parentComment));
+    }
+
+    //댓글 삭제
+    @Transactional
+    public void deleteComment(Long id, Member member) {
+        ArticleComment articleComment = articleCommentRepository.findById(id)
+                .orElseThrow(CommentNotFoundException::new);
+
+        validateDeleteComment(articleComment,member);
+        articleCommentRepository.delete(articleComment);
+    }
+
+    private void validateDeleteComment(ArticleComment articleComment, Member member) {
+        if(!articleComment.isOwnComment(member)){
+            throw new AuthInfoDtoNotEqualsException();
+        }
     }
 
 

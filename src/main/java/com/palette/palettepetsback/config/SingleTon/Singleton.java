@@ -1,5 +1,6 @@
 package com.palette.palettepetsback.config.SingleTon;
 
+import com.palette.palettepetsback.config.aop.notification.TimeTrace;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,4 +18,9 @@ public class Singleton {
     public String BUCKET_NAME(){
         return "palettepets";
     }
+
+//    @Bean
+//    public TimeTrace timeTrace(){
+//        return new TimeTrace();
+//    }
 }

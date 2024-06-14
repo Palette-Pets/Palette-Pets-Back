@@ -23,6 +23,7 @@ public class HotSpotResponse {
     private Double lat;
     private Double lng;
     private Integer countViews;
+    private Integer rating;
     // img_hot_spot
     private List<ImgHotSpotResponse> imgList;
 }

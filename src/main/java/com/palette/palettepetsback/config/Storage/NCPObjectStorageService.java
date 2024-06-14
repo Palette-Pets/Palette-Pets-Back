@@ -65,6 +65,7 @@ public class NCPObjectStorageService {
 
         // delete object
         try {
+
             s3.deleteObject(bucketName, fileName);
             log.info("Object deleted: '{}'", fileName);
         } catch (AmazonS3Exception e) {

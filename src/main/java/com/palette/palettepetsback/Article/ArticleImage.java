@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.AbstractPersistable;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 @Entity
 @Getter
@@ -32,8 +33,8 @@ public class ArticleImage {
         this.article = article;
     }
 
-    public static ArticleImage from(String originalFilename) {
-        return new ArticleImage(originalFilename, null);
+    public static ArticleImage from(String imgUrl) {
+        return new ArticleImage(imgUrl, null);
     }
 
     public void initArticle(Article article) {
@@ -42,7 +43,7 @@ public class ArticleImage {
         }
     }
 
-    public boolean isSameImageId(int id) {
-        return this.getId() ==id;
+    public boolean isSameImageId(Long id) {
+        return Objects.equals(this.getId(), id);
     }
 }

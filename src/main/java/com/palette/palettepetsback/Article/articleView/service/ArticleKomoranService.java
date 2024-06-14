@@ -2,7 +2,7 @@ package com.palette.palettepetsback.Article.articleView.service;
 
 import com.palette.palettepetsback.Article.Article;
 import com.palette.palettepetsback.Article.QArticle;
-import com.palette.palettepetsback.Article.articleView.DTO.reponsse.ArticleResponseDTO;
+import com.palette.palettepetsback.Article.articleView.DTO.response.ArticleResponseDTO;
 import com.palette.palettepetsback.Article.articleView.DTO.PageableDTO;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;

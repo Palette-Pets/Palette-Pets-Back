@@ -16,6 +16,4 @@ public interface ArticleLikeRepository extends JpaRepository<ArticleLike, Long> 
     List<ArticleLike> findByArticle(Article article);
     Long countByArticle(Article article);
 
-
-
 }

@@ -2,6 +2,7 @@ package com.palette.palettepetsback.articleComment.entity;
 
 import com.palette.palettepetsback.Article.Article;
 
+import com.palette.palettepetsback.config.jwt.AuthInfoDto;
 import com.palette.palettepetsback.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
@@ -37,6 +38,8 @@ public class ArticleComment {
     @OnDelete(action= OnDeleteAction.CASCADE)
     private Member member;
 
+
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     @Column(name = "updated_at")
@@ -63,19 +66,21 @@ public class ArticleComment {
         this.content = content;
     }
 
-    @PrePersist
-    public void prePersist(){
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-        this.isDeleted=false;
+//    @PrePersist
+//    public void prePersist(){
+//        this.createdAt = LocalDateTime.now();
+//        this.updatedAt = LocalDateTime.now();
+//        this.isDeleted=false;
+//    }
+//    @PostPersist
+//    public void postPersist() {
+//        if(this.ref == 0){
+//            this.ref = Math.toIntExact(this.articleCommentId);
+//        }
+//    }
+
+
+    public boolean isOwnComment(Member member) {
+        return this.member.equals(member);
     }
-    @PostPersist
-    public void postPersist() {
-        if(this.ref == 0){
-            this.ref = Math.toIntExact(this.articleCommentId);
-        }
-    }
-
-
-
 }

@@ -72,6 +72,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/login").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/memberF/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/member/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name())
+                                .requestMatchers(HttpMethod.POST, "/feed/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name())
                                 .requestMatchers(HttpMethod.POST, "/join").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/reissue").permitAll()
                                 .requestMatchers("/logout", "/").permitAll()

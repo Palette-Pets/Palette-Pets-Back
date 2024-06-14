@@ -19,5 +19,4 @@ public class NoMemberExistException extends RuntimeException {
         super(message, cause);
     }
 
-
 }
