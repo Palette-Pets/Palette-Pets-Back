@@ -16,6 +16,8 @@ import com.palette.palettepetsback.pet.repository.ImgPetRepository;
 import com.palette.palettepetsback.pet.repository.PetRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -209,5 +211,14 @@ public class PetService {
         return petImgList.stream()
                 .map(ImgPetResponseDto::toDto)
                 .toList();
+    }
+
+    // 회원 == 주인 체크 메서드 -> 캐싱
+    @Cacheable(value = "checkIsMaster", key = "#checkingMemberId", cacheManager = "cacheManager")
+    public boolean checkIsMaster(Long petId, Long checkingMemberId) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new NoSuchPetException("pet not found"));
+        Long memberId = pet.getMember().getMemberId();
+        return memberId.equals(checkingMemberId);
     }
 }

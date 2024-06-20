@@ -2,11 +2,12 @@ package com.palette.palettepetsback.Article.articleWrite.service;
 
 import com.palette.palettepetsback.Article.Article;
 import com.palette.palettepetsback.Article.ArticleLike;
+import com.palette.palettepetsback.Article.ArticleLikeId;
 import com.palette.palettepetsback.Article.articleView.repository.ArticleRepository;
 import com.palette.palettepetsback.Article.articleWrite.dto.request.ArticleLikeRequestDto;
 import com.palette.palettepetsback.Article.articleWrite.dto.response.ArticleLikeResponseDto;
 import com.palette.palettepetsback.Article.articleWrite.repository.ArticleLikeRepository;
-import com.palette.palettepetsback.Article.articleWrite.repository.LikeArticleRedisRepository;
+import com.palette.palettepetsback.Article.articleWrite.repository.ArticleWriteRepository;
 import com.palette.palettepetsback.Article.redis.LikeArticleRedis;
 import com.palette.palettepetsback.member.entity.Member;
 import com.palette.palettepetsback.member.repository.MemberRepository;
@@ -28,29 +29,37 @@ import java.util.UUID;
 public class ArticleLikeService {
     private final ArticleLikeRepository articleLikeRepository;
     private final ArticleRepository articleRepository;
+    private final ArticleWriteRepository articleWriteRepository;
     private final MemberRepository memberRepository;
 
-    // Redis
-    private final LikeArticleRedisRepository likeArticleRedisRepository;
 
-    public void likeArticle(Long articleId,Long memberId){
+
+    @Transactional
+    public String likeArticle(Long articleId,Long memberId){
         Article article = articleRepository.findById(articleId)
                 .orElseThrow(()->new IllegalArgumentException("게시글 찾을수없음"));
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(()->new IllegalArgumentException("Member not found"));
 
+
         Optional<ArticleLike>existingLike= articleLikeRepository.findByArticleAndMember(article,member);
         if(existingLike.isPresent()){
-            return;
+            return "이미 좋아요를 눌렀습니다.";
         }
 
+        articleWriteRepository.incrementLoveCount(articleId,article.getCountLoves()+1);
+
+        ArticleLikeId articleLikeId = new ArticleLikeId(articleId, memberId);
+
         ArticleLike articleLike = ArticleLike.builder()
+                .id(articleLikeId)
                 .article(article)
                 .member(member)
                 .createdAt(LocalDateTime.now())
                 .build();
 
         articleLikeRepository.save(articleLike);
+        return "좋아요가 등록되었습니다.";
     }
 
     public void unlikeArticle(Long articleId,Long memberId){
@@ -73,44 +82,6 @@ public class ArticleLikeService {
         Article article = articleRepository.findById(articleId)
                 .orElseThrow(()->new IllegalArgumentException("Article not found"));
         return articleLikeRepository.countByArticle(article);
-    }
-
-
-
-
-    //좋아요 Redis 조회
-    public Boolean isLike(Long articleId, Long memberId) {
-
-        Optional<List<LikeArticleRedis>> likeArticleRedis = likeArticleRedisRepository.findAllByMemberId(memberId);
-
-        if(likeArticleRedis.isPresent()){
-            log.info("likeArticleRedis:{}", likeArticleRedis.get());
-            for(LikeArticleRedis like : likeArticleRedis.get()){
-                if(like.getArticleId().equals(articleId)){
-                    log.info("like:{}", like.getArticleId());
-                    log.info("articleId:{}", articleId);
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    //좋아요 Redis 저장
-    public Boolean resistLike(Long articleId, Long memberId) {
-
-        try{
-            likeArticleRedisRepository.save(LikeArticleRedis.builder()
-                    .likeId(UUID.randomUUID().toString())
-                    .memberId(memberId)
-                    .articleId(articleId)
-                    .build());
-            return true;
-        }
-        catch (Exception e){
-            log.info("좋아요 - Redis 저장 실패");
-            return false;
-        }
     }
 
 }

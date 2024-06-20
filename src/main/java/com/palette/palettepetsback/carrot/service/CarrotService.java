@@ -3,10 +3,12 @@ package com.palette.palettepetsback.carrot.service;
 import com.palette.palettepetsback.Article.articleView.DTO.PageableDTO;
 import com.palette.palettepetsback.carrot.domain.Carrot;
 import com.palette.palettepetsback.carrot.domain.CarrotImage;
+import com.palette.palettepetsback.carrot.domain.CarrotLike;
 import com.palette.palettepetsback.carrot.domain.QCarrot;
 import com.palette.palettepetsback.carrot.dto.CarrotRequestDTO;
 import com.palette.palettepetsback.carrot.dto.CarrotResponseDTO;
 import com.palette.palettepetsback.carrot.repository.CarrotImageRepository;
+import com.palette.palettepetsback.carrot.repository.CarrotLikeRepository;
 import com.palette.palettepetsback.carrot.repository.CarrotRepository;
 import com.palette.palettepetsback.config.SingleTon.Singleton;
 import com.palette.palettepetsback.config.Storage.NCPObjectStorageService;
@@ -24,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +34,7 @@ import java.util.stream.Collectors;
 public class CarrotService {
     private final CarrotRepository carrotRepository;
     private  final CarrotImageRepository carrotImageRepository;
+    private final CarrotLikeRepository carrotLikeRepository;
     private  final MemberRepository memberRepository;
     private final NCPObjectStorageService objectStorageService;
 
@@ -123,9 +127,11 @@ public class CarrotService {
         List<OrderSpecifier> orderSpecifiers = new ArrayList<>();
         orderSpecifiers.add(new OrderSpecifier(order, entityPath.get(pd.getSort())));
 
-        String[] searchList = pd.getWhere().split(",");
-
         BooleanBuilder where = new BooleanBuilder();
+
+        if(pd.getWhere() != null && !pd.getWhere().isEmpty()) {
+            where.and(qCarrot.carrotTag.contains(pd.getWhere()));
+        }
 
         List<Carrot> carrots = jpaQueryFactory
                 .selectFrom(qCarrot)
@@ -136,15 +142,164 @@ public class CarrotService {
         System.out.println("offset : " + offset);
         System.out.println("Size : "+ carrots.size());
 
-        List<CarrotResponseDTO> carrotResponseDTOList = carrots.stream()
-                .map(responseDTO -> new CarrotResponseDTO(responseDTO))
-                .collect(Collectors.toList());
+        List<CarrotResponseDTO> carrotResponseDTOList=new ArrayList<>();
+        for (Carrot c : carrots) {
+            List<CarrotImage> carrotImage = carrotImageRepository.findByCarrotId(c);
+
+            String member = c.getMember().getMemberNickname();
+            CarrotResponseDTO carrotResponseDTO = new CarrotResponseDTO();
+            carrotResponseDTO.setCarrotId(c.getCarrotId());
+            carrotResponseDTO.setMemberId(member);
+            carrotResponseDTO.setCarrotTitle(c.getCarrotTitle());
+            carrotResponseDTO.setCarrotContent(c.getCarrotContent());
+            carrotResponseDTO.setCarrot_price(c.getCarrot_price());
+            carrotResponseDTO.setCarrot_createdAt(c.getCarrot_createdAt());
+            carrotResponseDTO.setCarrotTag(c.getCarrotTag());
+            carrotResponseDTO.setCarrotLike(c.getCarrotLike());
+            carrotResponseDTO.setCarrotView(c.getCarrotView());
+
+            if(!carrotImage.isEmpty()){
+                carrotResponseDTO.setImg(carrotImage.get(0).getCarrotImageUrl());
+            }
+
+            carrotResponseDTOList.add(carrotResponseDTO);
+        }
+
+//        List<CarrotResponseDTO> carrotResponseDTOList = carrots.stream()
+//                .map(responseDTO -> new CarrotResponseDTO(responseDTO))
+//                .collect(Collectors.toList());
 
         return carrotResponseDTOList;
     }
 
+    //전체 리스트 출력
     @Transactional
-    public List<Carrot> test() {
-        return carrotRepository.findAll();
+    public List<CarrotResponseDTO> test() {
+
+        List<Carrot> carrot = carrotRepository.findAll();
+
+        List<CarrotResponseDTO> carrotResponseDTOList = new ArrayList<>();
+        for (Carrot c : carrot) {
+            String member = c.getMember().getMemberNickname();
+            CarrotResponseDTO carrotResponseDTO=new CarrotResponseDTO();
+            carrotResponseDTO.setCarrotId(c.getCarrotId());
+            carrotResponseDTO.setMemberId(member);
+            carrotResponseDTO.setCarrotTitle(c.getCarrotTitle());
+            carrotResponseDTO.setCarrotContent(c.getCarrotContent());
+            carrotResponseDTO.setCarrot_price(c.getCarrot_price());
+            carrotResponseDTO.setCarrot_createdAt(c.getCarrot_createdAt());
+            carrotResponseDTO.setCarrotTag(c.getCarrotTag());
+            carrotResponseDTO.setCarrotLike(c.getCarrotLike());
+            carrotResponseDTO.setCarrotView(c.getCarrotView());
+
+            carrotResponseDTOList.add(carrotResponseDTO);
+        }
+
+        return carrotResponseDTOList;
+    }
+
+    //조회수 증가
+    @Transactional
+    public int updateView(Long id) {
+        return carrotRepository.updateView(id);
+    }
+
+    //상세 출력
+    @Transactional
+    public CarrotResponseDTO listDetail(Long id) {
+        Optional<Carrot> carrotId = carrotRepository.findById(id);
+        Carrot carrot = carrotId.get();
+
+        return CarrotResponseDTO.builder()
+                .carrotId(carrot.getCarrotId())
+                .memberId(carrot.getMember().getMemberName())
+                .carrotTitle(carrot.getCarrotTitle())
+                .carrotContent(carrot.getCarrotContent())
+                .carrot_price(carrot.getCarrot_price())
+                .carrot_createdAt(carrot.getCarrot_createdAt())
+                .carrotTag(carrot.getCarrotTag())
+                .carrotLike(carrot.getCarrotLike())
+                .carrotView(carrot.getCarrotView())
+                .build();
+    }
+
+
+    public String like(Long carrotId, Long memberId) {
+        Optional<Carrot> carrot= carrotRepository.findById(carrotId);
+        Optional<Member> member = memberRepository.findByMemberId(memberId);
+        Optional<CarrotLike> carrotLike = carrotLikeRepository.findByCarrotIdAndMember(carrot.get(),member.get());
+
+        if(carrotLike.isPresent()){
+            carrotLikeRepository.delete(carrotLike.get());
+
+            carrot.get().like(-1); //총 좋아요 개수 카운트
+            carrotRepository.save(carrot.get());
+            return "좋아요 취소";
+        }else{
+            CarrotLike like = new CarrotLike();
+            like.save(member.get(),carrot.get());
+            carrotLikeRepository.save(like);
+
+            carrot.get().like(+1); //총 좋아요 개수 카운트
+            carrotRepository.save(carrot.get());
+            return "좋아요 완료";
+        }
+    }
+    public List<CarrotResponseDTO> getLike(Long memberId){
+        Optional<Member> member = memberRepository.findByMemberId(memberId);
+        List<Carrot> carrotList = carrotRepository.findByMember(member.get());
+
+        List<CarrotResponseDTO> carrotResponseDTOList = new ArrayList<>();
+        for (Carrot c : carrotList) {
+            List<CarrotImage> carrotImage = carrotImageRepository.findByCarrotId(c);
+
+            String memberNickname = c.getMember().getMemberNickname();
+            CarrotResponseDTO carrotResponseDTO = new CarrotResponseDTO();
+            carrotResponseDTO.setCarrotId(c.getCarrotId());
+            carrotResponseDTO.setCarrotTitle(c.getCarrotTitle());
+            carrotResponseDTO.setCarrotContent(c.getCarrotContent());
+            carrotResponseDTO.setCarrot_price(c.getCarrot_price());
+            carrotResponseDTO.setCarrot_createdAt(c.getCarrot_createdAt());
+            carrotResponseDTO.setMemberId(memberNickname); // 이건 닉네임임
+            carrotResponseDTO.setCarrotTag(c.getCarrotTag());
+            carrotResponseDTO.setCarrotLike(c.getCarrotLike());
+            carrotResponseDTO.setCarrotView(c.getCarrotView());
+
+            if(!carrotImage.isEmpty()){
+                carrotResponseDTO.setImg(carrotImage.get(0).getCarrotImageUrl());
+            }
+
+            carrotResponseDTOList.add(carrotResponseDTO);
+        }
+        return carrotResponseDTOList;
+    }
+
+    public List<CarrotResponseDTO> searchCarrots(String keyword) {
+        List<Carrot> carrotList=carrotRepository.findByCarrotTitleContainingOrCarrotContentContaining(keyword, keyword);
+        List<CarrotResponseDTO> carrotResponseDTOList=new ArrayList<>();
+        for (Carrot c : carrotList) {
+            List<CarrotImage> carrotImage = carrotImageRepository.findByCarrotId(c);
+
+            String member = c.getMember().getMemberNickname();
+            CarrotResponseDTO carrotResponseDTO=new CarrotResponseDTO();
+            carrotResponseDTO.setCarrotId(c.getCarrotId());
+            carrotResponseDTO.setMemberId(member);
+            carrotResponseDTO.setCarrotTitle(c.getCarrotTitle());
+            carrotResponseDTO.setCarrotContent(c.getCarrotContent());
+            carrotResponseDTO.setCarrot_price(c.getCarrot_price());
+            carrotResponseDTO.setCarrot_createdAt(c.getCarrot_createdAt());
+            carrotResponseDTO.setCarrotTag(c.getCarrotTag());
+            carrotResponseDTO.setCarrotLike(c.getCarrotLike());
+            carrotResponseDTO.setCarrotView(c.getCarrotView());
+
+            if(!carrotImage.isEmpty()){
+                carrotResponseDTO.setImg(carrotImage.get(0).getCarrotImageUrl());
+            }
+
+            carrotResponseDTOList.add(carrotResponseDTO);
+        }
+
+
+        return carrotResponseDTOList;
     }
 }

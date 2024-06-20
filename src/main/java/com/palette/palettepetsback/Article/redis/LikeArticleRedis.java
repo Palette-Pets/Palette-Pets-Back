@@ -8,13 +8,13 @@ import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.index.Indexed;
 
 @Data
-@RedisHash(value = "ArticleLike", timeToLive = (24 * 60 * 60))
+@RedisHash(value = "ArticleLikeRedis", timeToLive = (24 * 60 * 60))
 @Builder
 @ToString
 public class LikeArticleRedis {
 
     @Id
-    String likeId;
+     String likeId;
 
     @Indexed
     Long memberId;

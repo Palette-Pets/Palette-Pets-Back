@@ -5,9 +5,8 @@ import com.palette.palettepetsback.config.Mail.RegisterMail;
 import com.palette.palettepetsback.config.SingleTon.Singleton;
 import com.palette.palettepetsback.config.Storage.NCPObjectStorageService;
 import com.palette.palettepetsback.config.exceptions.NoSuchPetException;
-import com.palette.palettepetsback.member.dto.JoinRequest;
-import com.palette.palettepetsback.member.dto.MemberImgRequest;
-import com.palette.palettepetsback.member.dto.MemberRequest;
+import com.palette.palettepetsback.member.dto.*;
+import com.palette.palettepetsback.member.entity.Follow;
 import com.palette.palettepetsback.member.entity.Member;
 import com.palette.palettepetsback.member.repository.MemberRepository;
 import com.palette.palettepetsback.pet.dto.request.ImgPetRegistryDto;
@@ -20,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -32,6 +32,7 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final RegisterMail registerMail;
     private final NCPObjectStorageService objectStorageService;
+    private final FollowService followService;
 
 
     //이메일 중복확인
@@ -154,6 +155,23 @@ public class MemberService {
             memberRepository.save(member);
         });
 
+    }
+
+    public MyPageRespons getMyPage(Long memberId) {
+        Optional<Member> optionalMember=memberRepository.findByMemberId(memberId);
+
+        MyPageRespons myPageRespons = new MyPageRespons();
+
+        optionalMember.ifPresent(member -> {
+            List<FollowResponse> list_er = followService.getFollowerList(member.getMemberNickname(), memberId);
+            List<FollowResponse> list_ing = followService.getFollowingList(member.getMemberNickname(), memberId);
+            myPageRespons.setNickname(member.getMemberNickname());
+            myPageRespons.setImg(member.getMemberImage());
+            myPageRespons.setFollower(list_er.size());
+            myPageRespons.setFollowing(list_ing.size());
+        });
+
+        return myPageRespons;
     }
 
     //일반 로그인 -안씀

@@ -6,6 +6,7 @@ import com.palette.palettepetsback.Article.articleWrite.dto.request.ArticleLikeR
 import com.palette.palettepetsback.Article.articleWrite.dto.response.ArticleLikeResponseDto;
 import com.palette.palettepetsback.Article.articleWrite.service.ArticleLikeService;
 import com.palette.palettepetsback.config.jwt.AuthInfoDto;
+import com.palette.palettepetsback.config.jwt.JWTUtil;
 import com.palette.palettepetsback.config.jwt.jwtAnnotation.JwtAuth;
 import com.palette.palettepetsback.member.dto.UserDTO;
 import com.palette.palettepetsback.member.entity.Member;
@@ -29,12 +30,18 @@ public class LikeController {
     private final ArticleLikeService articleLikeService;
 
     //좋아요 등록
-    @PostMapping("/like")
-    public ResponseEntity<Void>likeArticle(@RequestBody ArticleLikeRequestDto dto){
-        articleLikeService.likeArticle(dto.getArticleId(),dto.getMemberId());
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
     //좋아요 클릭시 countLove + 1
+    @PostMapping("/like")
+    public ResponseEntity<String>likeArticle(@RequestBody ArticleLikeRequestDto dto,
+                                           @JwtAuth AuthInfoDto authInfoDto){
+
+        if(authInfoDto == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        return ResponseEntity.ok(articleLikeService.likeArticle(dto.getArticleId(),authInfoDto.getMemberId()));
+    }
+
 
     //좋아요 취소
     @DeleteMapping("/like/{articleId}/{memberId}")

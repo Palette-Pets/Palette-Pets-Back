@@ -19,10 +19,17 @@ public class HotSpotStarPoint {
     private Long id;
     @Column(name = "rating") // 별점
     private Integer rating;
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hot_spot_id") // 평가 대상 게시물
     private HotSpot hotSpot;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id") // 별점 평가자
     private Member member;
+
+    @Builder
+    public HotSpotStarPoint(HotSpot hotSpot, Member member, Integer rating) {
+        this.hotSpot = hotSpot;
+        this.member = member;
+        this.rating = rating;
+    }
 }

@@ -15,6 +15,6 @@ public class PopularArticleService {
     private final ArticleRepository articleRepository;
 
     public List<PopularArticleDTO> likeArticle(){
-        return articleRepository.findPopularArticleByDate(LocalDateTime.now().minusDays(3));
+        return articleRepository.findPopularArticleByDate(LocalDateTime.now().minusDays(10));
     }
 }

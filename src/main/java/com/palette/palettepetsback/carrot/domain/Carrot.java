@@ -14,6 +14,7 @@ import java.util.List;
 @Entity
 @Table(name = "carrot")
 @NoArgsConstructor
+@Getter
 public class Carrot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,6 +49,7 @@ public class Carrot {
     @Column(name = "carrot_view")
     private Integer carrotView;
 
+
     //저장되기 전 실행 메서드(default 값 지정)
     @PrePersist
     public void prePersist() {
@@ -62,7 +64,8 @@ public class Carrot {
         this.carrot_createdAt = LocalDateTime.now();
     }
 
-    //CarrotImage와 매핑(orphanRemoval : 영속성 전이 설정)
-//    @OneToMany(mappedBy = "Carrot", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<CarrotImage> carrotImages = new ArrayList<>();
+    public void like(int sum){
+        this.carrotLike=this.carrotLike+sum;
+    }
+
 }

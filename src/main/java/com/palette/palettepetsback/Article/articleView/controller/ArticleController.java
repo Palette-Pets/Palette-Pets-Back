@@ -59,6 +59,7 @@ public class ArticleController {
         log.info("pd: {}", pd);
         List<ArticleResponseDTO> articles = articleService.searchList(pd);
         log.info("articles: {}", articles);
+
         return ResponseEntity.ok().body(articles);
     }
 

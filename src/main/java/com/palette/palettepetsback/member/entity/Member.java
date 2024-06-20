@@ -1,5 +1,6 @@
 package com.palette.palettepetsback.member.entity;
 
+import com.palette.palettepetsback.carrot.domain.CarrotLike;
 import com.palette.palettepetsback.member.dto.Role;
 import com.palette.palettepetsback.pet.entity.Pet;
 import jakarta.persistence.*;
@@ -19,6 +20,9 @@ public class Member {
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<Pet> pets = new ArrayList<>();
 
+    @OneToMany(mappedBy = "member",fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private List<CarrotLike> carrotLikeList =new ArrayList<>();
+
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_id")
     private Long memberId;
@@ -26,7 +30,7 @@ public class Member {
     private String password;
     @Column(name = "member_name")
     private String memberName;
-    @Column(name = "member_nickname")
+    @Column(name = "member_nickname", unique = true)
     private String memberNickname;
     @Column(name = "member_address")
     private String memberAddress;

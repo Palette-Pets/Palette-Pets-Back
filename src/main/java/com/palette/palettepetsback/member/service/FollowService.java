@@ -22,10 +22,12 @@ public class FollowService {
     private final FollowRepository followRepository;
 
     public void follow(String nickname, Long followingId) {
+        System.out.println("nickname = " + nickname);
+        System.out.println("followingId = " + followingId);
         Optional<Member> followerMember = memberRepository.findByMemberNickname(nickname);
         Optional<Member> followingMember= memberRepository.findByMemberId(followingId);
         // 자기 자신 follow 안됨
-        if (followerMember == followingMember)
+        if (followerMember.get().getMemberId() == followingMember.get().getMemberId())
             throw new IllegalArgumentException("자기 자신을 follow할 수 없습니다.");
 
         if (followerMember.isPresent()) {

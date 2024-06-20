@@ -10,8 +10,6 @@ import com.palette.palettepetsback.Article.articleWrite.dto.request.ArticleWrite
 import com.palette.palettepetsback.Article.articleWrite.repository.ArticleWriteRepository;
 import com.palette.palettepetsback.Article.articleWrite.response.Response;
 import com.palette.palettepetsback.Article.articleWrite.service.ArticleWriteService;
-import com.palette.palettepetsback.Article.exception.type.ArticleNotFoundException;
-import com.palette.palettepetsback.Article.redis.ReportArticleRedis;
 import com.palette.palettepetsback.config.jwt.AuthInfoDto;
 import com.palette.palettepetsback.config.jwt.jwtAnnotation.JwtAuth;
 import com.palette.palettepetsback.member.entity.Member;
@@ -124,11 +122,6 @@ public class ArticleWriteController {
                                 @Valid @RequestPart(value = "dto") final ArticleUpdateRequest req,
                                 @RequestPart(value = "files", required = false) List<MultipartFile> files,
                                 @JwtAuth final AuthInfoDto authInfoDto){
-
-//        log.info("articleId = {}", articleId);
-//        log.info("req = {}", req);
-//        log.info("files = {}", files);
-//        log.info("authInfoDto = {}", authInfoDto);
 
         articleWriteService.editArticle(articleId,req,authInfoDto,files);
 

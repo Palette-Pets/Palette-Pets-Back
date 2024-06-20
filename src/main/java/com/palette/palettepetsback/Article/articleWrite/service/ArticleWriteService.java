@@ -43,8 +43,7 @@ public class ArticleWriteService {
     private final FileService fileService;
     private final MemberRepository memberRepository;
 
-    // Redis
-    private final ReportArticleRedisRepository reportArticleRedisRepository;
+
 
 
 
@@ -166,6 +165,8 @@ public class ArticleWriteService {
                 .orElseThrow(ArticleNotFoundException::new);
 
         Member member = article.getMember();
+
+
         return ArticleWriteResponseDto.toDto(article,member.getMemberNickname(),member.getMemberImage());
     }
 
@@ -205,9 +206,9 @@ public class ArticleWriteService {
         // 로직 순서
         // 1. 이미지를 업로드
         // 2. 업로드, 삭제 데이터베이스 업데이트
-        // 3. 이미지 삭제로직이 실패 하면 업로드한 이미지 롤백
-        // 4. 이미지 삭제
-        // 5. 트랜잭션은 자동으로 롤백 한다.
+        // 3. 이미지 삭제로직이 실패 하면 1 에서 업로드한 이미지 롤백 - 실패시 트랜잭션은 자동 롤백
+        // 4. 수정 전 남아있는 이미지 삭제
+        // 5. 로깅
 
         // 기존 이미지 url
         List<String> imgUrls = article.getImages().stream()
@@ -244,7 +245,7 @@ public class ArticleWriteService {
         }
         catch(Exception e){
             //3. 실패시 추가 한 이미지 롤백
-            uploadedImageUrls.forEach(imageKey -> objectStorageService.deleteFile(Singleton.S3_BUCKET_NAME, "article/img/"+imageKey));
+            uploadedImageUrls.forEach(imageKey -> objectStorageService.deleteFile(Singleton.S3_BUCKET_NAME, "article/img/" + imageKey));
             throw e;
         }
 
@@ -316,41 +317,6 @@ public class ArticleWriteService {
         articleWriteRepository.updateCountReviews(article.getArticleId(), article.getCountReview()+1);
     }
 
-
-    //신고 전 확인
-    public Boolean isTodayReport(Long articleId, Long memberId) {
-
-        Optional<List<ReportArticleRedis>> reportArticleRedis = reportArticleRedisRepository.findAllByMemberId(memberId);
-
-        if(reportArticleRedis.isPresent()){
-            log.info("reportArticleRedis:{}", reportArticleRedis.get());
-            for(ReportArticleRedis report : reportArticleRedis.get()){
-               if(report.getArticleId().equals(articleId)){
-                   log.info("report:{}", report.getArticleId());
-                   log.info("articleId:{}", articleId);
-                   return true;
-               }
-            }
-        }
-        return false;
-    }
-
-    // 신고 Redis 저장
-    public Boolean resistReport(Long articleId, Long memberId) {
-
-        try{
-            reportArticleRedisRepository.save(ReportArticleRedis.builder()
-                    .reportId(UUID.randomUUID().toString())
-                    .memberId(memberId)
-                    .articleId(articleId)
-                    .build());
-            return true;
-        }
-        catch (Exception e){
-            log.info("신고 - Redis 저장 실패");
-            return false;
-        }
-    }
 
     // 신고 RDBMS countReport+1
     @Transactional

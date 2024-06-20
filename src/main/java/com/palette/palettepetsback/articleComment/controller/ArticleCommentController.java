@@ -5,6 +5,7 @@ import com.palette.palettepetsback.Article.articleView.service.ArticleService;
 import com.palette.palettepetsback.Article.articleWrite.response.Response;
 import com.palette.palettepetsback.Article.articleWrite.service.ArticleWriteService;
 import com.palette.palettepetsback.articleComment.dto.request.ArticleCommentAddRequest;
+import com.palette.palettepetsback.articleComment.dto.request.ArticleCommentUpdateRequest;
 import com.palette.palettepetsback.articleComment.dto.response.ArticleCommentListResponse;
 import com.palette.palettepetsback.articleComment.entity.ArticleComment;
 import com.palette.palettepetsback.articleComment.repository.ArticleCommentRepository;
@@ -59,17 +60,24 @@ public class ArticleCommentController {
         }
         dto.setCreatedWho(memberInfo.getMemberId());//dto를 받아와서 멤버아이디가 없으니까  위에꺼를 가져와서 넣기
         log.info("member : " + memberInfo.getMemberId());
-       ArticleComment comment = articleCommentService.create(dto);
+         ArticleComment comment = articleCommentService.create(dto);
         log.info("dto = {}",dto);
 
         articleWriteService.updateCountReviews(dto.getArticleId());
-       return ResponseEntity.ok("작성하신 댓글이 등록되었습니다.");
+
+        return ResponseEntity.ok("작성하신 댓글이 등록되었습니다.");
     }
 
 
     //PATCH
    @PatchMapping("/Patch/comments/{articleCommentId}")
-    public ResponseEntity<ArticleComment>update(@PathVariable Long articleCommentId){
+    public ResponseEntity<ArticleComment>update(@PathVariable Long articleCommentId,
+                                                @RequestBody ArticleCommentUpdateRequest dto,
+                                                @JwtAuth AuthInfoDto authInfoDto){
+
+
+        ArticleComment articleComment = articleCommentService.update(articleCommentId, dto, authInfoDto);
+
 
         return ResponseEntity.status(HttpStatus.OK).body(new ArticleComment());
     }

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class TimeTrace {
 
-    @Around("execution(* com.palette.palettepetsback..*(..))")
+//    @Around("execution(* com.palette.palettepetsback..*(..))")
     public Object execute(ProceedingJoinPoint joinPoint) throws Throwable {
         long start = System.currentTimeMillis();
         log.info("START: {}", joinPoint.toString());

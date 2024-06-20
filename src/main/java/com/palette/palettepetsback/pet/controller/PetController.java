@@ -2,6 +2,7 @@ package com.palette.palettepetsback.pet.controller;
 
 import com.palette.palettepetsback.config.jwt.AuthInfoDto;
 import com.palette.palettepetsback.config.jwt.JWTUtil;
+import com.palette.palettepetsback.config.jwt.jwtAnnotation.JwtAuth;
 import com.palette.palettepetsback.pet.dto.request.ImgPetRegistryDto;
 import com.palette.palettepetsback.pet.dto.request.PetRegistryDto;
 import com.palette.palettepetsback.pet.dto.request.PetUpdateDto;
@@ -25,30 +26,43 @@ public class PetController {
     private final PetService petService;
 
     // 한 회원이 등록한 반려동물 정보 리스트 쿼리
-    @GetMapping("/list/{memberId}")
-    public List<PetResponseDto> getPetListByMemberId(@PathVariable("memberId") Long memberId) {
-        return petService.findAllByMemberId(memberId);
+    @GetMapping("/list")
+    public List<PetResponseDto> getPetListByMemberId(@JwtAuth AuthInfoDto authInfoDto) {
+        return petService.findAllByMemberId(authInfoDto.getMemberId());
+    }
+
+    // 접근 회원이 반려 동물의 주인이 맞는 지 확인
+    @GetMapping("/{petId}/checkMaster")
+    public boolean checkIsMaster(@PathVariable("petId") Long petId,
+                                        @JwtAuth AuthInfoDto authInfoDto) {
+        return petService.checkIsMaster(petId, authInfoDto.getMemberId());
     }
 
     // 등록된 반려동물 정보 상세 정보 쿼리
     @GetMapping("/{petId}")
-    public PetResponseDto getPetByPetId(@PathVariable("petId") Long petId) {
+    public PetResponseDto getPetByPetId(@PathVariable("petId") Long petId,
+                                        @JwtAuth AuthInfoDto authInfoDto) {
         return petService.findByPetId(petId);
     }
 
     // 펫 이미지 리스트 가져오기
     @GetMapping("/img/list/{petId}")
-    public List<ImgPetResponseDto> getPetImgListByMemberId(@PathVariable("petId") Long petId) {
+    public List<ImgPetResponseDto> getPetImgListByPetId(@PathVariable("petId") Long petId,
+                                                        @JwtAuth AuthInfoDto authInfoDto) {
         return petService.findAllPetImgById(petId);
     }
 
     // 펫 등록
     @PostMapping("")
     public boolean registerPet(@Validated @RequestPart("dto") PetRegistryDto dto,
-                               @RequestPart("file") MultipartFile file) {
-        // todo S3 저장 메서드 test 필요
+                               @RequestPart("file") MultipartFile file,
+                               @JwtAuth AuthInfoDto authInfoDto) {
+        // memberId 넣기
+        dto.setCreatedWho(authInfoDto.getMemberId());
+
         String petImage = petService.fileUpload(file, "pet");
         dto.setPetImage(petImage);
+
         log.info("dto={}", dto);
         return petService.registerPet(dto) != null;
     }
@@ -79,7 +93,11 @@ public class PetController {
     @PutMapping("/{petId}")
     public boolean updatePet(@PathVariable("petId") Long petId,
                              @Validated @RequestPart("dto") PetUpdateDto dto,
-                             @RequestPart(value = "file", required = false) MultipartFile file) {
+                             @RequestPart(value = "file", required = false) MultipartFile file,
+                             @JwtAuth AuthInfoDto authInfoDto) {
+        // memberId 넣기
+        dto.setCreatedWho(authInfoDto.getMemberId());
+
         if (file != null) {
             String petImage = petService.fileUpload(file, "pet");
             dto.setPetImage(petImage);
@@ -111,13 +129,5 @@ public class PetController {
         log.info("dto ={}", dto);
         log.info("s3Result ={}", s3Result);
         return true;
-    }
-
-    // 잠깐 getMemberInfo() 호출 테스트 -> 로그인하고 테스트 or 로그인 안하고 테스트 해보기
-    @GetMapping("/test/memberInfo")
-    public AuthInfoDto test2() {
-        AuthInfoDto memberInfo = JWTUtil.getMemberInfo();
-        log.info("memberInfo={}", memberInfo);
-        return memberInfo;
     }
 }

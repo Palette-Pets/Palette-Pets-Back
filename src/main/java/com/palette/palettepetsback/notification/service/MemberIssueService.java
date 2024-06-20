@@ -30,7 +30,7 @@ public class MemberIssueService {
     private final EmitterRepository emitterRepository;
     private final MemberRepository memberRepository;
 
-    private static final Long DEFAULT_TIMEOUT = 60 * 60 * 60 * 1000L;
+    private static final Long DEFAULT_TIMEOUT = 45 * 1000L;
 
     public SseEmitter connect(final Long memberId, final String lastEventId) {
 

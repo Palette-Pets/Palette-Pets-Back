@@ -7,6 +7,7 @@ import com.palette.palettepetsback.Article.articleView.repository.ArticleReposit
 import com.palette.palettepetsback.Article.exception.type.AuthInfoDtoNotEqualsException;
 import com.palette.palettepetsback.Article.exception.type.CommentNotFoundException;
 import com.palette.palettepetsback.articleComment.dto.request.ArticleCommentAddRequest;
+import com.palette.palettepetsback.articleComment.dto.request.ArticleCommentUpdateRequest;
 import com.palette.palettepetsback.articleComment.dto.response.ArticleCommentListResponse;
 import com.palette.palettepetsback.articleComment.entity.ArticleComment;
 import com.palette.palettepetsback.articleComment.entity.QArticleComment;
@@ -105,6 +106,20 @@ public class ArticleCommentService {
         return articleCommentRepository.save(dto.toEntity(article,member, parentComment));
     }
 
+    //    //댓글 수정
+    @Transactional
+    public ArticleComment update(Long articleCommentId, ArticleCommentUpdateRequest dto, AuthInfoDto authInfoDto) {
+        //댓글 조회
+        ArticleComment target = articleCommentRepository.findById(articleCommentId)
+                .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을수 없습니다"));
+        //댓글 내용 업데이트
+        target.setContent(dto.getContent());
+        //변경 사항저장
+        ArticleComment updatedComment = articleCommentRepository.save(target);
+        //DTO로 변환하여 반환
+        return target;
+    }
+
     //댓글 삭제
     @Transactional
     public void deleteComment(Long id, Member member) {
@@ -137,19 +152,7 @@ public class ArticleCommentService {
 //        return parentRef * 10 + 1;
 //    }
 //
-//    //댓글 수정
-//    @Transactional
-//    public ArticleCommentRequestDto update(Long articleCommentId, ArticleCommentRequestDto dto) {
-//        //댓글 조회
-//        ArticleComment target = articleCommentRepository.findById(articleCommentId)
-//                .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을수 없습니다"));
-//        //댓글 내용 업데이트
-//        target.setContent(dto.getContent());
-//        //변경 사항저장
-//        ArticleComment updatedComment = articleCommentRepository.save(target);
-//        //DTO로 변환하여 반환
-//        return ArticleCommentRequestDto.createArticleCommentDto(updatedComment);
-//    }
+
 //
 //    //댓글 삭제
 //    public ArticleComment delete(Long articleCommentId) {

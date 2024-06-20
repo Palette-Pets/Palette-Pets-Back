@@ -20,7 +20,7 @@ public class ImgHotSpot {
     @Column(name = "img_url") // Object Storage 에 저장한 file url
     private String imgUrl;
     private LocalDateTime createdAt;
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hot_spot_id") // 이미지 연결 명소 게시물
     private HotSpot hotSpot;
     private Boolean isDeleted = false;
@@ -29,6 +29,8 @@ public class ImgHotSpot {
     public ImgHotSpot(String imgUrl, HotSpot hotSpot) {
         this.imgUrl = imgUrl;
         this.hotSpot = hotSpot;
+        this.createdAt = LocalDateTime.now();
+        this.isDeleted = false;
     }
 
 }

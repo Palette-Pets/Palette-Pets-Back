@@ -112,7 +112,9 @@ public class Article {
         this.state= State.valueOf(modified);
     }
 
-
+    public void increaseLikeCount() {
+        this.countLoves++;
+    }
 
     // 1. req에 addImages -> 등록해야 할 파일
     // 2. req에 deletedImages -> 삭제해야 할 파일
@@ -200,6 +202,7 @@ public class Article {
             this.content = article.content;
         if(article.articleTags != null)
             this.articleTags = article.articleTags;
+
     }
 
     @Getter

@@ -4,11 +4,13 @@ import com.palette.palettepetsback.config.SingleTon.Singleton;
 import com.palette.palettepetsback.config.Storage.NCPObjectStorageService;
 import com.palette.palettepetsback.config.exceptions.NoMemberExistException;
 import com.palette.palettepetsback.hotSpot.dto.request.HotSpotAddRequest;
+import com.palette.palettepetsback.hotSpot.dto.request.HotSpotStarPointAddRequest;
 import com.palette.palettepetsback.hotSpot.dto.request.HotSpotUpdateRequest;
 import com.palette.palettepetsback.hotSpot.dto.response.HotSpotListResponse;
 import com.palette.palettepetsback.hotSpot.dto.response.HotSpotResponse;
 import com.palette.palettepetsback.hotSpot.dto.response.ImgHotSpotResponse;
 import com.palette.palettepetsback.hotSpot.entity.HotSpot;
+import com.palette.palettepetsback.hotSpot.entity.HotSpotStarPoint;
 import com.palette.palettepetsback.hotSpot.entity.ImgHotSpot;
 import com.palette.palettepetsback.hotSpot.repository.HotSpotRepository;
 import com.palette.palettepetsback.hotSpot.repository.HotSpotStarPointRepository;
@@ -23,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -70,13 +73,18 @@ public class HotSpotService {
         // 연관 이미지 모두삭제
         List<ImgHotSpot> imgHotSpots = hotSpot.getImgHotSpots();
         for (ImgHotSpot imgHotSpot : imgHotSpots) {
+            log.info("imgHotSpot Id : {}", imgHotSpot.getId());
+            log.info("imgHotSpot url : {}", imgHotSpot.getImgUrl());
             deleteHotSpotImage(imgHotSpot.getId());
         }
+
         if (files.length > 0) {
             // 새 거 넣기
             for (MultipartFile file : files) {
                 addHotSpotImage(hotSpot.getId(), file);
             }
+        } else {
+            log.info("수정해서 대신 넣을 file 이 없음");
         }
 
     }
@@ -151,7 +159,9 @@ public class HotSpotService {
 
     // 이미지 등록 메서드
     @Transactional
+//    public Long addHotSpotImage(HotSpot hotSpot, MultipartFile img) {
     public Long addHotSpotImage(Long hotSpotId, MultipartFile img) {
+
         HotSpot hotSpot = hotSpotRepository.findById(hotSpotId)
                 .orElseThrow(() -> new RuntimeException("명소 추천 게시글이 존재하지 않습니다."));
 
@@ -247,8 +257,35 @@ public class HotSpotService {
                 .build();
     }
 
+    // 명소 글 별점 추천 생성 메서드
+    @Transactional
+    public boolean saveHotSpotStarPoint(HotSpotStarPointAddRequest dto) {
+
+        HotSpot hotSpot = hotSpotRepository.findById(dto.getHotSpotId())
+                .orElseThrow(() -> new RuntimeException("hotSpot not found"));
+        Member member = memberRepository.findById(dto.getMemberId())
+                .orElseThrow(() -> new RuntimeException("memberId not found"));
+
+        // 이미 존재하는 별점이 있다면 없애고 등록
+        Optional<HotSpotStarPoint> alreadyRated = hotSpotStarPointRepository.findAlreadyRated(dto.getHotSpotId(), dto.getMemberId());
+        alreadyRated.ifPresent(hotSpotStarPointRepository::delete);
+
+
+        // 별점 등록
+        HotSpotStarPoint saved = hotSpotStarPointRepository.save(
+                HotSpotStarPoint.builder()
+                        .hotSpot(hotSpot)
+                        .member(member)
+                        .rating(dto.getRating())
+                        .build()
+        );
+
+        return saved.getId() != null;
+    }
+
     private Integer getHotSpotAverageStarPoint(HotSpot hotSpot) {
         // 별점 계산해서 각각 게시물 하나에 별점 결과값 넣어주기 = (총 별점 / 평가자수)
         return hotSpotStarPointRepository.calculateStarPoint(hotSpot.getId());
     }
+
 }

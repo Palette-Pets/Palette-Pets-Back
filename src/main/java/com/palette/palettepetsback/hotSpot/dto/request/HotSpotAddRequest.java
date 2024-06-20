@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 @Setter
 public class HotSpotAddRequest {
 
-    @NotNull(message = "작성자의 pk가 존재해야 합니다")
     private Long memberId;
     @NotBlank(message = "장소명을 반드시 기재해야 합니다")
     private String placeName;
