@@ -5,6 +5,7 @@ import com.palette.palettepetsback.carrot.domain.Carrot;
 import com.palette.palettepetsback.carrot.domain.CarrotImage;
 import com.palette.palettepetsback.carrot.domain.CarrotLike;
 import com.palette.palettepetsback.carrot.domain.QCarrot;
+import com.palette.palettepetsback.carrot.dto.CarrotRecentDTO;
 import com.palette.palettepetsback.carrot.dto.CarrotRequestDTO;
 import com.palette.palettepetsback.carrot.dto.CarrotResponseDTO;
 import com.palette.palettepetsback.carrot.repository.CarrotImageRepository;
@@ -76,7 +77,7 @@ public class CarrotService {
 
     //글 수정
     @Transactional
-    public Carrot update(Long id , CarrotRequestDTO dto) {
+    public void update(Long id , CarrotRequestDTO dto) {
 
         //글 찾기
         Carrot carrot = carrotRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Not exist Carrot Data by id : ["+id+"]"));
@@ -86,10 +87,9 @@ public class CarrotService {
         carrot.setCarrotContent(dto.getCarrotContent());
         carrot.setCarrot_price(dto.getCarrot_price());
         carrot.setCarrotTag(dto.getCarrotTag());
+        carrot.setCarrotState(dto.getCarrotState());
 
-        Carrot carrotUpdate = carrotRepository.save(carrot);
-
-        return carrotUpdate;
+        carrotRepository.save(carrot);
     }
 
     //글 삭제
@@ -147,12 +147,14 @@ public class CarrotService {
             List<CarrotImage> carrotImage = carrotImageRepository.findByCarrotId(c);
 
             String member = c.getMember().getMemberNickname();
+
             CarrotResponseDTO carrotResponseDTO = new CarrotResponseDTO();
             carrotResponseDTO.setCarrotId(c.getCarrotId());
             carrotResponseDTO.setMemberId(member);
             carrotResponseDTO.setCarrotTitle(c.getCarrotTitle());
             carrotResponseDTO.setCarrotContent(c.getCarrotContent());
             carrotResponseDTO.setCarrot_price(c.getCarrot_price());
+            carrotResponseDTO.setCarrotState(c.getCarrotState());
             carrotResponseDTO.setCarrot_createdAt(c.getCarrot_createdAt());
             carrotResponseDTO.setCarrotTag(c.getCarrotTag());
             carrotResponseDTO.setCarrotLike(c.getCarrotLike());
@@ -172,30 +174,37 @@ public class CarrotService {
         return carrotResponseDTOList;
     }
 
-    //전체 리스트 출력
+    //회원 별 작성 리스트 출력
     @Transactional
-    public List<CarrotResponseDTO> test() {
+    public List<CarrotResponseDTO> test(Long id, Long userId) {
+        Carrot carrot = carrotRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Not exist Carrot Data by id : ["+id+"]"));
+        //글쓴이 아이디
+        Long carrId = carrot.getMember().getMemberId();
 
-        List<Carrot> carrot = carrotRepository.findAll();
-
+        List<Carrot> carrotList = new ArrayList<>();
         List<CarrotResponseDTO> carrotResponseDTOList = new ArrayList<>();
-        for (Carrot c : carrot) {
-            String member = c.getMember().getMemberNickname();
-            CarrotResponseDTO carrotResponseDTO=new CarrotResponseDTO();
-            carrotResponseDTO.setCarrotId(c.getCarrotId());
-            carrotResponseDTO.setMemberId(member);
-            carrotResponseDTO.setCarrotTitle(c.getCarrotTitle());
-            carrotResponseDTO.setCarrotContent(c.getCarrotContent());
-            carrotResponseDTO.setCarrot_price(c.getCarrot_price());
-            carrotResponseDTO.setCarrot_createdAt(c.getCarrot_createdAt());
-            carrotResponseDTO.setCarrotTag(c.getCarrotTag());
-            carrotResponseDTO.setCarrotLike(c.getCarrotLike());
-            carrotResponseDTO.setCarrotView(c.getCarrotView());
 
-            carrotResponseDTOList.add(carrotResponseDTO);
+        if(carrId.equals(userId)) {
+            carrotList.add(carrot);
+            for (Carrot c : carrotList) {
+                String member = c.getMember().getMemberNickname();
+                CarrotResponseDTO carrotResponseDTO = new CarrotResponseDTO();
+                carrotResponseDTO.setCarrotId(c.getCarrotId());
+                carrotResponseDTO.setMemberId(member);
+                carrotResponseDTO.setCarrotTitle(c.getCarrotTitle());
+                carrotResponseDTO.setCarrotContent(c.getCarrotContent());
+                carrotResponseDTO.setCarrot_price(c.getCarrot_price());
+                carrotResponseDTO.setCarrot_createdAt(c.getCarrot_createdAt());
+                carrotResponseDTO.setCarrotTag(c.getCarrotTag());
+                carrotResponseDTO.setCarrotLike(c.getCarrotLike());
+                carrotResponseDTO.setCarrotView(c.getCarrotView());
+
+                carrotResponseDTOList.add(carrotResponseDTO);
+            }
+            return  carrotResponseDTOList;
+        } else {
+            return null;
         }
-
-        return carrotResponseDTOList;
     }
 
     //조회수 증가
@@ -210,16 +219,24 @@ public class CarrotService {
         Optional<Carrot> carrotId = carrotRepository.findById(id);
         Carrot carrot = carrotId.get();
 
+        List<CarrotImage> carrotImage = carrotImageRepository.findByCarrotId(carrot);
+
+//        if(!carrotImage.isEmpty()){
+//            carrotResponseDTO.setImg(carrotImage.get(5).getCarrotImageUrl());
+//        }
+
         return CarrotResponseDTO.builder()
                 .carrotId(carrot.getCarrotId())
-                .memberId(carrot.getMember().getMemberName())
+                .memberId(carrot.getMember().getMemberNickname())
                 .carrotTitle(carrot.getCarrotTitle())
                 .carrotContent(carrot.getCarrotContent())
                 .carrot_price(carrot.getCarrot_price())
+                //.img(carrotImage.get().getCarrotImageUrl())
                 .carrot_createdAt(carrot.getCarrot_createdAt())
                 .carrotTag(carrot.getCarrotTag())
                 .carrotLike(carrot.getCarrotLike())
                 .carrotView(carrot.getCarrotView())
+                .carrotState(carrot.getCarrotState())
                 .build();
     }
 
@@ -274,9 +291,10 @@ public class CarrotService {
         return carrotResponseDTOList;
     }
 
+    //검색 기능
     public List<CarrotResponseDTO> searchCarrots(String keyword) {
-        List<Carrot> carrotList=carrotRepository.findByCarrotTitleContainingOrCarrotContentContaining(keyword, keyword);
-        List<CarrotResponseDTO> carrotResponseDTOList=new ArrayList<>();
+        List<Carrot> carrotList = carrotRepository.findByCarrotTitleContainingOrCarrotContentContaining(keyword, keyword);
+        List<CarrotResponseDTO> carrotResponseDTOList = new ArrayList<>();
         for (Carrot c : carrotList) {
             List<CarrotImage> carrotImage = carrotImageRepository.findByCarrotId(c);
 
@@ -298,8 +316,63 @@ public class CarrotService {
 
             carrotResponseDTOList.add(carrotResponseDTO);
         }
+        return carrotResponseDTOList;
+    }
 
+    //글쓴이와 로그인 사용자 확인
+    public Long findId(Long id) {
+        Carrot carrot = carrotRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Not exist Carrot Data by id : ["+id+"]"));
 
+        return carrot.getMember().getMemberId();
+    }
+
+    //상태 변경 기능
+    public void state(Long id, int carrotState) {
+        Carrot carrot = carrotRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Not exist Carrot Data by id : ["+id+"]"));
+
+        carrot.setCarrotState(carrotState);
+
+        carrotRepository.save(carrot);
+    }
+
+    public List<CarrotRecentDTO> getRecentList(){
+        return carrotRepository.findRecentCarrot();
+    }
+
+    //최신순 리스트 출력
+    public List<CarrotResponseDTO> recentList(int page) {
+        List<Carrot> carrot = carrotRepository.findAll();
+        QCarrot qCarrot = QCarrot.carrot;
+
+        List<Carrot> carrots = jpaQueryFactory
+                .selectFrom(qCarrot)
+                .orderBy(qCarrot.carrot_createdAt.desc())
+                .limit(page)
+                .fetch();
+
+        List<CarrotResponseDTO> carrotResponseDTOList=new ArrayList<>();
+
+        for(Carrot c : carrots) {
+            List<CarrotImage> carrotImage = carrotImageRepository.findByCarrotId(c);
+
+            String member = c.getMember().getMemberNickname();
+            CarrotResponseDTO carrotResponseDTO=new CarrotResponseDTO();
+            carrotResponseDTO.setCarrotId(c.getCarrotId());
+            carrotResponseDTO.setMemberId(member);
+            carrotResponseDTO.setCarrotTitle(c.getCarrotTitle());
+            carrotResponseDTO.setCarrotContent(c.getCarrotContent());
+            carrotResponseDTO.setCarrot_price(c.getCarrot_price());
+            carrotResponseDTO.setCarrot_createdAt(c.getCarrot_createdAt());
+            carrotResponseDTO.setCarrotTag(c.getCarrotTag());
+            carrotResponseDTO.setCarrotLike(c.getCarrotLike());
+            carrotResponseDTO.setCarrotView(c.getCarrotView());
+
+            if(!carrotImage.isEmpty()){
+                carrotResponseDTO.setImg(carrotImage.get(0).getCarrotImageUrl());
+            }
+
+            carrotResponseDTOList.add(carrotResponseDTO);
+        }
         return carrotResponseDTOList;
     }
 }

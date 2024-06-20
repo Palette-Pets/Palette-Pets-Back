@@ -9,6 +9,7 @@ import com.palette.palettepetsback.config.jwt.jwtAnnotation.JwtAuth;
 import com.palette.palettepetsback.member.entity.Member;
 import com.palette.palettepetsback.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 public class ChatController {
     private final ChatService chatService;
     private final MemberRepository memberRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @GetMapping("/api/chat")
     public ResponseEntity<ChatResponse> getChatRoom(@JwtAuth final AuthInfoDto authInfoDto,
@@ -41,11 +43,12 @@ public class ChatController {
         List<ChatRoomListResponse> response = chatService.getChatRoomList(authInfoDto.getMemberId()).stream()
                 .map(chatRoom -> {
                     Long userId = chatRoom.getUser1() == authInfoDto.getMemberId() ? chatRoom.getUser2() : chatRoom.getUser1();
+                    String nickName = memberRepository.findByMemberId(userId).orElseThrow(() -> new IllegalArgumentException("해당하는 회원이 없습니다.")).getMemberNickname();
                     return new ChatRoomListResponse(
                             chatRoom.getChatRoomId().toString(),
                             userId,
-                            memberRepository.findByMemberId(userId).orElseThrow(() -> new IllegalArgumentException("해당하는 회원이 없습니다."))
-                                    .getMemberNickname()
+                            nickName,
+                            redisTemplate.opsForValue().get("count:"+chatRoom.getChatRoomId().toString()+nickName)
                     );
                 })
                 .collect(Collectors.toList());

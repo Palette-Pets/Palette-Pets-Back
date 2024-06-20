@@ -49,6 +49,9 @@ public class Carrot {
     @Column(name = "carrot_view")
     private Integer carrotView;
 
+    @Column(name = "carrot_image")
+    private String carrotImage;
+
 
     //저장되기 전 실행 메서드(default 값 지정)
     @PrePersist

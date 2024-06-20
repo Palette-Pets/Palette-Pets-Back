@@ -19,5 +19,6 @@ public class CarrotRequestDTO {
    // private String carrotImg;
     private Member memberId;
     private String carrotTag;
+    private int carrotState;
 
 }

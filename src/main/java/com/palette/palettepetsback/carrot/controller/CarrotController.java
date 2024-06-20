@@ -4,6 +4,7 @@ import com.palette.palettepetsback.Article.articleView.DTO.PageableDTO;
 import com.palette.palettepetsback.carrot.domain.Carrot;
 import com.palette.palettepetsback.carrot.domain.CarrotImage;
 import com.palette.palettepetsback.carrot.dto.CarrotImageDTO;
+import com.palette.palettepetsback.carrot.dto.CarrotRecentDTO;
 import com.palette.palettepetsback.carrot.dto.CarrotRequestDTO;
 import com.palette.palettepetsback.carrot.dto.CarrotResponseDTO;
 import com.palette.palettepetsback.carrot.service.CarrotService;
@@ -56,8 +57,8 @@ public class CarrotController {
     }
 
     //글 & 이미지 수정
-    @PutMapping("/update/{id}")
-    public ResponseEntity<Carrot> update(@PathVariable Long id,
+    @PostMapping("/update/{id}")
+    public ResponseEntity<?> update(@PathVariable Long id,
                                          @RequestBody CarrotRequestDTO dto,
                                          @RequestPart(required = false, value = "file") MultipartFile file) {
         //이미지 수정
@@ -69,9 +70,9 @@ public class CarrotController {
             //dto.setCarrotImg(carrotImg);
         }
         //글 수정
-        Carrot update = carrotService.update(id, dto);
+        carrotService.update(id, dto);
 
-        return  ResponseEntity.ok().body(update);
+        return  ResponseEntity.ok().build();
     }
 
     //글 & 이미지 삭제
@@ -85,14 +86,16 @@ public class CarrotController {
         return true;
     }
 
-    //전체 리스트
-    @GetMapping("/test")
-    public List<CarrotResponseDTO> test() {
-        List<CarrotResponseDTO> carrotList = carrotService.test();
-        //System.out.println(carrotList);
+    //회원 별 거래 리스트
+    @GetMapping("/postList/{id}")
+    public ResponseEntity<List<CarrotResponseDTO>> test(@PathVariable Long id,
+                                                        @JwtAuth AuthInfoDto authInfoDto) {
+        Long userId = authInfoDto.getMemberId();
+        List<CarrotResponseDTO> carrotList = carrotService.test(id, userId);
+
         log.info("carrot {}", carrotList);
 
-        return carrotList;
+        return ResponseEntity.ok().body(carrotList);
     }
 
     //페이징, 정렬 처리 된 리스트
@@ -132,9 +135,10 @@ public class CarrotController {
 
     //검색 기능
     @GetMapping("/search")
-    public List<CarrotResponseDTO> searchCarrots(@RequestParam String keyword) {
+    public ResponseEntity<List<CarrotResponseDTO>> searchCarrots(@RequestParam String keyword) {
 
-        return carrotService.searchCarrots(keyword);
+        List<CarrotResponseDTO> carrot = carrotService.searchCarrots(keyword);
+         return ResponseEntity.ok().body(carrot);
     }
 
     //네이버 공유 기능
@@ -143,4 +147,38 @@ public class CarrotController {
         return true;
     }
 
+    //글쓴이 && 로그인 사용자 확인용
+    @GetMapping("/check/{id}")
+    public boolean memberCheck(@PathVariable Long id,
+                               @JwtAuth AuthInfoDto authInfoDto) {
+
+        Long userId = authInfoDto.getMemberId();
+        Long memberId = carrotService.findId(id);
+        log.info("userId = {}", userId);
+        log.info("memberId = {}", memberId);
+
+        return userId.equals(memberId) ? true : false;
+    }
+
+    //상태 값 변경
+    @PostMapping("/state/{id}")
+    public ResponseEntity<?> updateState(@PathVariable Long id,
+                                         @RequestBody int carrotState) {
+        log.info("----------------------carrotState {}", carrotState);
+        carrotService.state(id, carrotState);
+        return ResponseEntity.ok().build();
+    }
+
+    //최신순 리스트 출력
+//    @GetMapping("/recent")
+//    public ResponseEntity<List<CarrotResponseDTO>> list(@RequestParam int page) {
+//        List<CarrotResponseDTO> list = carrotService.recentList(page);
+//        return ResponseEntity.ok().body(list);
+//    }
+
+    @GetMapping("/recent")
+    public ResponseEntity<List<CarrotRecentDTO>> list() {
+        List<CarrotRecentDTO> list = carrotService.getRecentList();
+        return ResponseEntity.ok().body(list);
+    }
 }

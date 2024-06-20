@@ -305,7 +305,6 @@ public class ArticleWriteService {
     public void updateCountViews(Long articleId) {
         Article article = articleWriteRepository.findById(articleId)
                 .orElseThrow(ArticleNotFoundException::new);
-        log.info("articleId:{}", article.getArticleId());
         articleWriteRepository.updateCountViews(article.getArticleId(), article.getCountViews()+1);
     }
     //댓글 등록시 댓글 개수 up

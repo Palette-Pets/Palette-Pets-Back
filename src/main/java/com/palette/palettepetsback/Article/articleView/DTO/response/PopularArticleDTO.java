@@ -13,4 +13,5 @@ public class PopularArticleDTO {
     private Long memberId;
     private String memberNickname;
     private Integer countLoves;
+    private Integer countComments;
 }

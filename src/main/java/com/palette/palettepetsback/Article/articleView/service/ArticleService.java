@@ -50,6 +50,7 @@ public class ArticleService {
 
         PathBuilder<?> entityPath = new PathBuilder<>(Article.class, "article"); // 나는 Article Entity를 조회할거야
         Order order = pd.getDir() ? Order.DESC : Order.ASC; // 오름차순, 내림차순 정하기
+        if (pd.getSort().equals("null")) pd.setSort("createdAt");
         List<OrderSpecifier> orderSpecifiers = new ArrayList<>(); // 정렬 조건 모음
         orderSpecifiers.add(new OrderSpecifier(order, entityPath.get(pd.getSort()))); // 정렬 조건 넣기
 

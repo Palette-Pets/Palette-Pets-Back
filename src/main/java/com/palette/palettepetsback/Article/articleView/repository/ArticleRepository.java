@@ -13,16 +13,18 @@ public interface ArticleRepository extends JpaRepository<Article, Long>, Article
     @Query("SELECT count(a) FROM Article a WHERE a.articleTags LIKE %?1%")
     Optional<Integer> countByArticleTagsContaining(String tag);
 
-    // inner join = 154초
+    // Main Page 인기글 List 출력
     @Query("SELECT new com.palette.palettepetsback.Article.articleView.DTO.response.PopularArticleDTO(a.articleId, a.title, " +
             " m.memberId, " +
-            " m.memberNickname, a.countLoves) " +
+            " m.memberNickname, a.countLoves, a.countReview) " +
             "FROM Article a JOIN Member m on a.createdWho = m.memberId " +
-            "WHERE a.createdAt >= :date ORDER BY a.countLoves DESC")
+            "WHERE a.createdAt >= :date " +
+            "ORDER BY a.countLoves DESC " +
+            "LIMIT 5")
     List<PopularArticleDTO> findPopularArticleByDate(LocalDateTime date);
 
     // fetch join = 176초
-    @Query("SELECT a FROM Article a join fetch a.member m " +
-            "where a.createdAt >= :date ORDER BY a.countLoves DESC")
-    List<Article> findPopularArticleByDate2(LocalDateTime date);
+//    @Query("SELECT a FROM Article a join fetch a.member m " +
+//            "where a.createdAt >= :date ORDER BY a.countLoves DESC")
+//    List<Article> findPopularArticleByDate2(LocalDateTime date);
 }

@@ -3,6 +3,7 @@ package com.palette.palettepetsback.Article.articleWrite.dto.request;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.List;
 @Data
 @ToString
 @AllArgsConstructor
+@NoArgsConstructor
 public class ArticleWriteDto {
 
 //    private Long articleId;

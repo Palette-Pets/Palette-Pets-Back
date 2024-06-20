@@ -10,12 +10,20 @@ import com.palette.palettepetsback.Article.articleWrite.dto.request.ArticleWrite
 import com.palette.palettepetsback.Article.articleWrite.repository.ArticleWriteRepository;
 import com.palette.palettepetsback.Article.articleWrite.response.Response;
 import com.palette.palettepetsback.Article.articleWrite.service.ArticleWriteService;
+import com.palette.palettepetsback.config.SingleTon.BadWordService;
+import com.palette.palettepetsback.config.exceptions.BadWordException;
 import com.palette.palettepetsback.config.jwt.AuthInfoDto;
 import com.palette.palettepetsback.config.jwt.jwtAnnotation.JwtAuth;
 import com.palette.palettepetsback.member.entity.Member;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import kr.co.shineware.nlp.komoran.constant.DEFAULT_MODEL;
+import kr.co.shineware.nlp.komoran.core.Komoran;
+import kr.co.shineware.nlp.komoran.model.KomoranResult;
+import kr.co.shineware.nlp.komoran.model.Token;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +31,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import static com.palette.palettepetsback.member.entity.QMember.member;
 
@@ -35,6 +45,8 @@ public class ArticleWriteController {
     private final ArticleWriteService articleWriteService;
     private final ArticleWriteRepository articleWriteRepository;
     private final ArticleRepository articleRepository;
+    private final RedisTemplate<String, String> redisTemplate;
+    private final BadWordService badWordService;
 
 //    @Autowired
 //    public ArticleWriteController(ArticleWriteService articleWriteService, ArticleWriteRepository articleWriteRepository) {
@@ -60,22 +72,36 @@ public class ArticleWriteController {
     //게시글 단건 조회
     @GetMapping("/articles/{articleId}")
     @ResponseStatus(HttpStatus.OK)
-    public Response findArticle(@PathVariable final Long articleId
-                                ){
-//        ,@JwtAuth final AuthInfoDto authInfoDto
-//        log.info("authInfo = {}", authInfoDto);
-        //조회수 증가
-        articleWriteService.updateCountViews(articleId);
-        //단건 응답
+    public Response findArticle(@PathVariable final Long articleId,
+                                HttpServletRequest request){
+        //조회수 증가 처리율 제한 추가
+        String sessionId = request.getSession().getId();
+        String key = "session_id_"+sessionId;
+        if(!redisTemplate.hasKey(key)) {
+            System.out.println("=======조회수 상승================");
+            articleWriteService.updateCountViews(articleId);
+            redisTemplate.opsForValue().set(key, sessionId, 600, TimeUnit.SECONDS);
+        }
+        else{
+            System.out.println("=======이미 조회수를 올린 사람입니다.================");
+        }
+        ////단건 응답
         return Response.success(articleWriteService.findArticle(articleId));
     }
 
     //게시글 등록 --- 완료
     @PostMapping(path="/Post/article")
-    public ResponseEntity<Article> create(@Valid @RequestPart("dto") ArticleWriteDto dto,
+    public ResponseEntity<String> create(@Valid @RequestPart("dto") ArticleWriteDto dto,
                                           @RequestPart(value="files",required = false) List<MultipartFile> files){
         log.info("dto = {}", dto);
         log.info("files = {}", files);
+
+        try {
+            badWordService.filterKomoran(dto.getTitle()+"_"+dto.getContent());
+        } catch (BadWordException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+
 
         //글 정보 DB 등록 -> article table
         Article created = articleWriteService.create(dto);
@@ -94,7 +120,7 @@ public class ArticleWriteController {
             }
 
         return (created != null)?
-                ResponseEntity.status(HttpStatus.OK).body(created):
+                ResponseEntity.status(HttpStatus.OK).body("글 작성이 완료되었습니다."):
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).build() ;
     }
 

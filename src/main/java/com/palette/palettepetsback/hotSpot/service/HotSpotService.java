@@ -283,6 +283,13 @@ public class HotSpotService {
         return saved.getId() != null;
     }
 
+    public Integer getHotSpotStarPoint(Long hotSpotId, Long memberId) {
+        HotSpotStarPoint hotSpotStarPoint = hotSpotStarPointRepository.findAlreadyRated(hotSpotId, memberId)
+                .orElse(HotSpotStarPoint.builder().rating(0).build());
+        // 이미 평가한게 없다면 0을 반환하도록 함 -> 0은 평가 안했다는 의미
+        return hotSpotStarPoint.getRating();
+    }
+
     private Integer getHotSpotAverageStarPoint(HotSpot hotSpot) {
         // 별점 계산해서 각각 게시물 하나에 별점 결과값 넣어주기 = (총 별점 / 평가자수)
         return hotSpotStarPointRepository.calculateStarPoint(hotSpot.getId());

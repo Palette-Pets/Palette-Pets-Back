@@ -116,4 +116,12 @@ public class HotSpotController {
         return hotSpotService.saveHotSpotStarPoint(dto);
     }
 
+    // 별점 정보 가져오기
+    @GetMapping("/rating/{hotSpotId}")
+    public Integer starRating(@PathVariable("hotSpotId") Long hotSpotId,
+                              @JwtAuth AuthInfoDto authInfoDto) {
+
+        return hotSpotService.getHotSpotStarPoint(hotSpotId, authInfoDto.getMemberId());
+    }
+
 }

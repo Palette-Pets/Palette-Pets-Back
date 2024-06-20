@@ -1,5 +1,6 @@
 package com.palette.palettepetsback.carrot.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.palette.palettepetsback.carrot.domain.Carrot;
 import lombok.*;
 
@@ -15,9 +16,11 @@ public class CarrotResponseDTO {
     private String carrotTitle;
     private String carrotContent;
     private Integer carrot_price;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime carrot_createdAt;
     private String memberId;
     private String carrotTag;
+    private int carrotState;
     private Integer carrotLike;
     private Integer carrotView;
     private String img;

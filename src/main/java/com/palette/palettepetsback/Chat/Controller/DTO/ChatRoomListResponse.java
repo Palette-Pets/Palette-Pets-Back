@@ -11,4 +11,5 @@ public class ChatRoomListResponse {
     private String roomId;
     private Long userId;
     private String nickname;
+    private Object count;
 }
