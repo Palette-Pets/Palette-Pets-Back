@@ -65,6 +65,11 @@ public class HotSpot {
         this.isDeleted = false;
     }
 
+    // countViews : 조회수 플러스 메서드
+    public void plusCountViews() {
+        this.countViews++;
+    }
+
     //update 메서드
     public void updateHotSpot(HotSpotUpdateRequest dto) {
         this.modifiedAt = LocalDateTime.now();

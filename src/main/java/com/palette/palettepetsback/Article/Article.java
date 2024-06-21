@@ -116,10 +116,10 @@ public class Article {
         this.countLoves++;
     }
 
-    // 1. req에 addImages -> 등록해야 할 파일
-    // 2. req에 deletedImages -> 삭제해야 할 파일
-    public ImageUpdateResult update(ArticleUpdateRequest req) {
 
+
+    //글 수정 공통사항 update
+    public void commonUpdate(ArticleUpdateRequest req) {
         StringJoiner joiner = new StringJoiner(",");
         for (String item : req.getArticleTags()) {
             joiner.add(item);
@@ -130,6 +130,12 @@ public class Article {
         this.articleTags = joiner.toString();
         this.title = req.getTitle();
         this.content = req.getContent();
+    }
+
+    public ImageUpdateResult update(ArticleUpdateRequest req) {
+
+        // 1. req에 addImages -> 등록해야 할 파일
+        // 2. req에 deletedImages -> 삭제해야 할 파일
 
         ImageUpdateResult result = findImageUpdateResult(req.getAddImages(),req.getDeletedImages());
 
@@ -143,13 +149,13 @@ public class Article {
 
 
 
-    private void addImages(List<ArticleImage> addedImages) {
+    public void addImages(List<ArticleImage> addedImages) {
         addedImages.forEach(addedImage->{
             images.add(addedImage);
             addedImage.initArticle(this);
         });
     }
-    private void deleteImages(List<ArticleImage> deletedImages) {
+    public void deleteImages(List<ArticleImage> deletedImages) {
         deletedImages.forEach(deletedImage->this.images.remove(deletedImage));
     }
 
@@ -161,7 +167,7 @@ public class Article {
         return new ImageUpdateResult(addedImages,deletedImages);
     }
 
-    private List<ArticleImage> convertImageIdsToImages(List<Long> imageIds) {
+    public List<ArticleImage> convertImageIdsToImages(List<Long> imageIds) {
         return imageIds.stream()
                 .map(this::convertImageIdToImage)
                 .filter(Optional::isPresent)
@@ -169,13 +175,13 @@ public class Article {
                 .collect(toList());
     }
 
-    private Optional<ArticleImage> convertImageIdToImage( Long id) {
+    public Optional<ArticleImage> convertImageIdToImage(Long id) {
      return this.images.stream()
              .filter(articleImage -> articleImage.isSameImageId(id))
              .findAny();
     }
 
-    private List<ArticleImage> convertImageFilesToImages(List<String> imageFiles) {
+    public List<ArticleImage> convertImageFilesToImages(List<String> imageFiles) {
         return imageFiles.stream()
                 .map(ArticleImage::from)
                 .collect(toList());

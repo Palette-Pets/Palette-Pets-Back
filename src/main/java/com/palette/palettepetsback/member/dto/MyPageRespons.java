@@ -12,4 +12,5 @@ public class MyPageRespons {
     private String img;
     private int follower;
     private int following;
+    private int feed;
 }

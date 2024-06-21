@@ -64,9 +64,10 @@ public class JWTFilter extends OncePerRequestFilter {
         Long memberId = claims.get("memberId", Long.class);
         String email = claims.get("email", String.class);
         String role = claims.get("role", String.class);
+        String memberNickname = claims.get("memberNickname", String.class);
 
         // 회원 정보 넣기
-        Member member = new Member(memberId, email, Role.valueOf(role));
+        Member member = new Member(memberId, email, Role.valueOf(role), memberNickname);
 
         // 시큐리티 인증 토큰 생성
         CustomUserDetails userDetails = CustomUserDetails

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
 import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.TimeToLive;
 import org.springframework.data.redis.core.index.Indexed;
 
 @Data
@@ -18,7 +19,7 @@ public class ArticleWriteRedis {
     @Indexed
     Long memberId;
 
-    Long articleId;
+    String expirationTime;
 
 }
 

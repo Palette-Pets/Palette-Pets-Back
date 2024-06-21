@@ -5,6 +5,8 @@ import com.palette.palettepetsback.Article.articleView.DTO.response.ArticleRespo
 import com.palette.palettepetsback.Article.articleView.DTO.PageableDTO;
 import com.palette.palettepetsback.Article.articleView.service.ArticleKomoranService;
 import com.palette.palettepetsback.Article.articleView.service.ArticleService;
+import com.palette.palettepetsback.config.jwt.AuthInfoDto;
+import com.palette.palettepetsback.config.jwt.jwtAnnotation.JwtAuth;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -88,5 +90,7 @@ public class ArticleController {
     public ResponseEntity<Integer> count(@RequestParam String where) {
         return ResponseEntity.ok().body(articleService.count(where));
     }
+
+
 
 }

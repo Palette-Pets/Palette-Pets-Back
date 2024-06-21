@@ -54,7 +54,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             throw new AuthenticationServiceException("Authentication method not supported: " + request.getMethod());
         } else {
 
-            LoginRequest loginRequest = new LoginRequest();
+            LoginRequest loginRequest;
 
             // JSON 으로 요청 : request -> username, password 추출
             try {
@@ -67,7 +67,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                 String username = loginRequest.getUsername();
                 String password = loginRequest.getPassword();
 
-//                LoginRequest loginRequest = objectMapper.readValue(request.getInputStream(), LoginRequest.class);
                 // 인증 토큰 생성
                 UsernamePasswordAuthenticationToken authenticationToken =
                         new UsernamePasswordAuthenticationToken(username, password);
@@ -96,6 +95,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         claims.put("memberId", member.getMemberId());
         claims.put("email", member.getEmail());
         claims.put("role", member.getRole().name());
+        claims.put("memberNickname", member.getMemberNickname());
 
         // token 발급
 //        String access = jwtUtil.generateToken("access", claims, 10 * 1000L); // 어세스 토큰 - 테스트용 10초 만료

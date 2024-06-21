@@ -40,12 +40,12 @@ public class MemberController {
 
 
     @PostMapping("/join")
-    public ResponseEntity<String> signup (@Valid @RequestBody JoinRequest joinRequest, BindingResult bindingResult) {
+    public ResponseEntity<String> signup(@Valid @RequestBody JoinRequest joinRequest, BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) { //에러출력
             List<FieldError> list = bindingResult.getFieldErrors();
-            for(FieldError error : list) {
-                return new ResponseEntity<>(error.getDefaultMessage() , HttpStatus.BAD_REQUEST);
+            for (FieldError error : list) {
+                return new ResponseEntity<>(error.getDefaultMessage(), HttpStatus.BAD_REQUEST);
             }
         }
         if (memberService.checkEmailDuplicate(joinRequest.getEmail())) {
@@ -60,7 +60,7 @@ public class MemberController {
     //비밀번호 찾기
     //등록된 이메일로 임시비밀번호를 발송하고 발송된 임시비밀번호로 사용자의 pw를 변경하는 컨트롤러
     @PostMapping("/memberF/findPw")
-    public ResponseEntity<String>sendEmail(@RequestBody  MemberRequest.Email Email){
+    public ResponseEntity<String> sendEmail(@RequestBody MemberRequest.Email Email) {
         if (memberService.checkEmailDuplicate(Email.getEmail())) { //이메일 존재
             EmailResponseDTO.sendPwDto dto = memberService.createMailUpdatePW(Email.getEmail());
 
@@ -77,7 +77,7 @@ public class MemberController {
     //중복시 true 반환
     @PostMapping("/memberF/checknickname")
     public Boolean checkNickname(@RequestBody MemberRequest.Nickname nickname) {
-        log.info("nick={}",nickname.getNickName());
+        log.info("nick={}", nickname.getNickName());
         if (memberService.checkNicknameDuplicate(nickname.getNickName())) {
             return true; // 중복되면 true 반환
         }
@@ -106,8 +106,6 @@ public class MemberController {
         }
 
 
-
-
         return ResponseEntity.ok("비밀번호가 수정되었습니다.");
     }
 
@@ -128,7 +126,7 @@ public class MemberController {
         if (authentication.getPrincipal() instanceof CustomUserDetails) {
             Long memberId = getMemberId(authentication);
 
-            memberService.updateNickname(memberId,nicknameRequest);
+            memberService.updateNickname(memberId, nicknameRequest);
         } else {
             return ResponseEntity.badRequest().body("인증되지 않은 사용자입니다.");
         }
@@ -160,7 +158,6 @@ public class MemberController {
     }
 
 
-
     // 생일, 성별 변경
     @PutMapping("/member/other")
     public ResponseEntity<String> updateBirthGender(@Valid @RequestBody MemberRequest.BirthGender birthGenderRequest, BindingResult bindingResult) {
@@ -188,7 +185,7 @@ public class MemberController {
     //이미지 해상도 자동으로 변경해주는 로직이 추가 .. 예정,,
     @PostMapping("/member/image")
     public ResponseEntity<String> updateProfileImage(
-                                  @RequestPart("files") MultipartFile file) {
+            @RequestPart("files") MultipartFile file) {
         // SecurityContext에서 인증 정보 추출
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication.getPrincipal() instanceof CustomUserDetails) {
@@ -219,29 +216,4 @@ public class MemberController {
         Long memberId= authInfoDto.getMemberId();
         return memberService.getMyPage(memberId);
     }
-
-
-
-    //로그인 페이지 - 사용하지 않습니다. -> loginFilter로 가세요
-//    @GetMapping("/login")
-//    public String loginPage() {
-//
-//        return "login";
-//    }
-//    @PostMapping("/login")
-//    public ResponseEntity<String> login(@Valid @RequestBody LoginRequest loginRequest, BindingResult bindingResult) {
-//
-//        if (bindingResult.hasErrors()) { //에러출력
-//            List<FieldError> list = bindingResult.getFieldErrors();
-//            for(FieldError error : list) {
-//                return new ResponseEntity<>(error.getDefaultMessage() , HttpStatus.BAD_REQUEST);
-//            }
-//        }
-//        //보안상 에러메시지는 간소화 했습니다.
-//        if (memberService.login(loginRequest.getUsername(), loginRequest.getPassword())==null) {
-//            return ResponseEntity.badRequest().body("이메일 또는 비밀번호가 잘못되었습니다.");
-//        }
-//
-//        return ResponseEntity.ok("로그인 성공");
-//    }
 }

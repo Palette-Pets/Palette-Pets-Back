@@ -42,6 +42,7 @@ public class CarrotController {
                          @JwtAuth AuthInfoDto authInfoDto) {
 
         //security 부터 memberId 값 받아오기
+
         Long memberId = authInfoDto.getMemberId();
 
         //글 등록
@@ -87,11 +88,10 @@ public class CarrotController {
     }
 
     //회원 별 거래 리스트
-    @GetMapping("/postList/{id}")
-    public ResponseEntity<List<CarrotResponseDTO>> test(@PathVariable Long id,
-                                                        @JwtAuth AuthInfoDto authInfoDto) {
+    @GetMapping("/postList")
+    public ResponseEntity<List<CarrotResponseDTO>> test(@JwtAuth AuthInfoDto authInfoDto) {
         Long userId = authInfoDto.getMemberId();
-        List<CarrotResponseDTO> carrotList = carrotService.test(id, userId);
+        List<CarrotResponseDTO> carrotList = carrotService.test(userId);
 
         log.info("carrot {}", carrotList);
 
@@ -168,6 +168,11 @@ public class CarrotController {
         carrotService.state(id, carrotState);
         return ResponseEntity.ok().build();
     }
+    @GetMapping("/recent")
+    public ResponseEntity<List<CarrotRecentDTO>> list() {
+        List<CarrotRecentDTO> list = carrotService.getRecentList();
+        return ResponseEntity.ok().body(list);
+    }
 
     //최신순 리스트 출력
 //    @GetMapping("/recent")
@@ -176,9 +181,5 @@ public class CarrotController {
 //        return ResponseEntity.ok().body(list);
 //    }
 
-    @GetMapping("/recent")
-    public ResponseEntity<List<CarrotRecentDTO>> list() {
-        List<CarrotRecentDTO> list = carrotService.getRecentList();
-        return ResponseEntity.ok().body(list);
-    }
+
 }

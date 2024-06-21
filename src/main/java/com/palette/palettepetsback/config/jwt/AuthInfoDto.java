@@ -15,4 +15,5 @@ public class AuthInfoDto {
     private Long memberId;
     private String email;
     private Role role;
+    private String memberNickname;
 }

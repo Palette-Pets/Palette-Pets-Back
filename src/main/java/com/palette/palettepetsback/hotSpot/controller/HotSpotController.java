@@ -87,6 +87,8 @@ public class HotSpotController {
     // 특정 게시글 조회
     @GetMapping("/{id}")
     public HotSpotResponse getHotSpotDetail(@PathVariable("id") Long id) {
+        // 조회할 게시글 조회수 + 1
+        hotSpotService.plusCountView(id);
         return hotSpotService.getHotSpotWithImg(id);
     }
 

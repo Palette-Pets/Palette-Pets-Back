@@ -71,10 +71,12 @@ public class Member {
         this.role = role;
     }
 
-    public Member(Long memberId, String email, Role role) {
+    // 인증용 토큰에 넣을 회원 생성자
+    public Member(Long memberId, String email, Role role, String memberNickname) {
         this.memberId = memberId;
         this.email = email;
         this.role = role;
+        this.memberNickname = memberNickname;
     }
 
     public void existData(String email, String memberName, String memberNickname, String memberBirth, String memberGender, String memberPhone){

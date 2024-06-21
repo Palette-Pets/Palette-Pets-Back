@@ -90,6 +90,7 @@ public class JWTUtil {
                 .memberId(member.getMemberId())
                 .email(member.getEmail())
                 .role(member.getRole())
+                .memberNickname(member.getMemberNickname())
                 .build();
     }
 
@@ -154,6 +155,17 @@ public class JWTUtil {
                 .parseSignedClaims(token)
                 .getPayload()
                 .get("role", String.class);
+    }
+
+    public String getMemberNickname(String token) {
+
+        return Jwts
+                .parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("memberNickname", String.class);
     }
 
     /**

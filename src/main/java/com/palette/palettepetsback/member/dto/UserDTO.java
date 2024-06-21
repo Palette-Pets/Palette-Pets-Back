@@ -7,6 +7,8 @@ import lombok.Setter;
 public class UserDTO {
 
     private String role;
+    private Long MemberId;
+    private String email;
     private String name;
     private String username;
 

@@ -18,6 +18,8 @@ public interface CarrotRepository extends JpaRepository<Carrot, Long> {
 
     List<Carrot> findByCarrotTitleContainingOrCarrotContentContaining(String title, String content);
 
+
+
     @Query("select new com.palette.palettepetsback.carrot.dto.CarrotRecentDTO(c.carrotId, c.carrotTitle, " +
             "c.carrotImage, c.carrotLike, c.carrotView) from Carrot c order by c.carrotId desc " +
             "LIMIT 5")
