@@ -1,5 +1,6 @@
 package com.palette.palettepetsback.articleComment.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.palette.palettepetsback.articleComment.entity.ArticleComment;
 import lombok.*;
 
@@ -15,17 +16,18 @@ public class ArticleCommentListResponse {
 
     private Long articleCommentId;
     private String content;
-    private LocalDateTime updateAt;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+    private LocalDateTime createAt;
     //Member 닉네임, 프로필 사진
     private String memberNickname;
     private String memberImage;
 
     private List<ArticleCommentListResponse> children = new ArrayList<>();
 
-    public ArticleCommentListResponse(Long articleCommentId, String content, LocalDateTime updateAt, String memberNickname, String memberImage) {
+    public ArticleCommentListResponse(Long articleCommentId, String content, LocalDateTime createAt, String memberNickname, String memberImage) {
         this.articleCommentId = articleCommentId;
         this.content = content;
-        this.updateAt = updateAt;
+        this.createAt = createAt;
         this.memberNickname = memberNickname;
         this.memberImage = memberImage;
     }

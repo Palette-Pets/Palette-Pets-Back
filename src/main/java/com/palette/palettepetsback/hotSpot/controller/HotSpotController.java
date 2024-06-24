@@ -1,5 +1,6 @@
 package com.palette.palettepetsback.hotSpot.controller;
 
+import com.palette.palettepetsback.config.SingleTon.ViewerLimit;
 import com.palette.palettepetsback.config.aop.notification.NeedNotification;
 import com.palette.palettepetsback.config.aop.notification.NotificationThreadLocal;
 import com.palette.palettepetsback.config.jwt.AuthInfoDto;
@@ -8,11 +9,14 @@ import com.palette.palettepetsback.hotSpot.dto.request.HotSpotAddRequest;
 import com.palette.palettepetsback.hotSpot.dto.request.HotSpotStarPointAddRequest;
 import com.palette.palettepetsback.hotSpot.dto.request.HotSpotUpdateRequest;
 import com.palette.palettepetsback.hotSpot.dto.response.HotSpotListResponse;
+import com.palette.palettepetsback.hotSpot.dto.response.HotSpotRecentDTO;
 import com.palette.palettepetsback.hotSpot.dto.response.HotSpotResponse;
 import com.palette.palettepetsback.hotSpot.dto.response.ImgHotSpotResponse;
 import com.palette.palettepetsback.hotSpot.service.HotSpotService;
 import com.palette.palettepetsback.member.dto.Role;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -22,13 +26,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/hotspot")
+@RequiredArgsConstructor
 public class HotSpotController {
 
     private final HotSpotService hotSpotService;
+    private final ViewerLimit viewerLimit;
 
-    public HotSpotController(HotSpotService hotSpotService) {
-        this.hotSpotService = hotSpotService;
-    }
 
     // 게시글 추가 (파일 포함)
     @PostMapping
@@ -86,9 +89,12 @@ public class HotSpotController {
 
     // 특정 게시글 조회
     @GetMapping("/{id}")
-    public HotSpotResponse getHotSpotDetail(@PathVariable("id") Long id) {
+    public HotSpotResponse getHotSpotDetail(@PathVariable("id") Long id,
+                                            HttpServletRequest request) {
         // 조회할 게시글 조회수 + 1
-        hotSpotService.plusCountView(id);
+        if (viewerLimit.viewLimit(request)) {
+            hotSpotService.plusCountView(id);
+        }
         return hotSpotService.getHotSpotWithImg(id);
     }
 
@@ -126,4 +132,10 @@ public class HotSpotController {
         return hotSpotService.getHotSpotStarPoint(hotSpotId, authInfoDto.getMemberId());
     }
 
+
+    // 메인페이지 최신순 가져오기
+    @GetMapping("/main")
+    public ResponseEntity<List<HotSpotRecentDTO>> getHotSpotRecent() {
+        return ResponseEntity.ok().body(hotSpotService.getHotSpotRecent());
+    }
 }

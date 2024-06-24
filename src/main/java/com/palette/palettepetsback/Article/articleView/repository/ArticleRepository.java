@@ -16,7 +16,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long>, Article
     // Main Page 인기글 List 출력
     @Query("SELECT new com.palette.palettepetsback.Article.articleView.DTO.response.PopularArticleDTO(a.articleId, a.title, " +
             " m.memberId, " +
-            " m.memberNickname, a.countLoves, a.countReview) " +
+            " m.memberNickname, m.memberImage, a.countLoves, a.countReview) " +
             "FROM Article a JOIN Member m on a.createdWho = m.memberId " +
             "WHERE a.createdAt >= :date " +
             "ORDER BY a.countLoves DESC " +

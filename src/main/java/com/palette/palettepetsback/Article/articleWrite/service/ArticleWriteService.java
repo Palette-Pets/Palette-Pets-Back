@@ -2,6 +2,7 @@ package com.palette.palettepetsback.Article.articleWrite.service;
 
 import com.palette.palettepetsback.Article.Article;
 import com.palette.palettepetsback.Article.ArticleImage;
+import com.palette.palettepetsback.Article.ArticleLike;
 import com.palette.palettepetsback.Article.articleWrite.dto.request.*;
 
 import com.palette.palettepetsback.Article.articleWrite.dto.response.ArticleUpdateResponseDto;
@@ -37,6 +38,7 @@ import java.util.stream.IntStream;
 public class ArticleWriteService {
 
     private final ArticleWriteRepository articleWriteRepository;
+    private final ArticleLikeRepository articleLikeRepository;
     private final NCPObjectStorageService objectStorageService;
     private final FileService fileService;
     private final MemberRepository memberRepository;
@@ -115,7 +117,6 @@ public class ArticleWriteService {
                 .orElseThrow(ArticleNotFoundException::new);
 
         Member member = article.getMember();
-
 
         return ArticleWriteResponseDto.toDto(article,member.getMemberNickname(),member.getMemberImage());
     }

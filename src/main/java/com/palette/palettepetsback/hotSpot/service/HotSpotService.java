@@ -7,6 +7,7 @@ import com.palette.palettepetsback.hotSpot.dto.request.HotSpotAddRequest;
 import com.palette.palettepetsback.hotSpot.dto.request.HotSpotStarPointAddRequest;
 import com.palette.palettepetsback.hotSpot.dto.request.HotSpotUpdateRequest;
 import com.palette.palettepetsback.hotSpot.dto.response.HotSpotListResponse;
+import com.palette.palettepetsback.hotSpot.dto.response.HotSpotRecentDTO;
 import com.palette.palettepetsback.hotSpot.dto.response.HotSpotResponse;
 import com.palette.palettepetsback.hotSpot.dto.response.ImgHotSpotResponse;
 import com.palette.palettepetsback.hotSpot.entity.HotSpot;
@@ -272,4 +273,7 @@ public class HotSpotService {
         return hotSpotStarPointRepository.calculateStarPoint(hotSpot.getId());
     }
 
+    public List<HotSpotRecentDTO> getHotSpotRecent() {
+        return hotSpotRepository.findTop10ByOrderByCreatedAtDesc();
+    }
 }

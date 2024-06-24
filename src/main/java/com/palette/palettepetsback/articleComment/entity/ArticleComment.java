@@ -66,18 +66,18 @@ public class ArticleComment {
         this.content = content;
     }
 
-//    @PrePersist
-//    public void prePersist(){
-//        this.createdAt = LocalDateTime.now();
-//        this.updatedAt = LocalDateTime.now();
-//        this.isDeleted=false;
-//    }
-//    @PostPersist
-//    public void postPersist() {
-//        if(this.ref == 0){
-//            this.ref = Math.toIntExact(this.articleCommentId);
-//        }
-//    }
+    @PrePersist
+    public void prePersist(){
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+        this.isDeleted=false;
+    }
+    @PostPersist
+    public void postPersist() {
+        if(this.ref == 0){
+            this.ref = Math.toIntExact(this.articleCommentId);
+        }
+    }
 
 
     public boolean isOwnComment(Member member) {

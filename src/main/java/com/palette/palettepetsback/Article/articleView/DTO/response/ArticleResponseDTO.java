@@ -1,5 +1,6 @@
 package com.palette.palettepetsback.Article.articleView.DTO.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.palette.palettepetsback.Article.Article;
 import com.palette.palettepetsback.Article.articleWrite.dto.request.ArticleImageDto;
 import lombok.AllArgsConstructor;
@@ -18,6 +19,7 @@ import static java.util.stream.Collectors.toList;
 public class ArticleResponseDTO {
 
     private Long articleId;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime createdAt;
     private Long createdWho;
     private String content;
